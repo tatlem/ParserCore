@@ -64,7 +64,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0';
+    private const VERSION = '1.0.0-alfa';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -777,7 +777,7 @@ class ParserCore
                             break;
 
                         case 'img':
-//                            $data = [
+                            //                            $data = [
                             //                                'type' => self::TYPE_IMAGE,
                             //                                // в текст можно было б сохранять alt например
                             //                                'text' => $entry->getAttribute('alt'),
@@ -804,21 +804,21 @@ class ParserCore
                                 }
                             }
 
-//                            $data = [
-//                                'type'  => self::TYPE_VIDEO,
-//                                'tag'   => $tagName,
-//                                'value' => static::getYoutubeIdFromUrl($src),
-//                            ];
+                            //                            $data = [
+                            //                                'type'  => self::TYPE_VIDEO,
+                            //                                'tag'   => $tagName,
+                            //                                'value' => static::getYoutubeIdFromUrl($src),
+                            //                            ];
                             break;
 
                         // @TODO quote-selector
                         case 'blockquote':
                         case 'q':
-//                            $data = [
-//                                'type' => self::TYPE_QUOTE,
-//                                'tag'  => $tagName,
-//                                'text' => $text,
-//                            ];
+                            //                            $data = [
+                            //                                'type' => self::TYPE_QUOTE,
+                            //                                'tag'  => $tagName,
+                            //                                'text' => $text,
+                            //                            ];
                             break;
                     }
 
