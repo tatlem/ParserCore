@@ -23,9 +23,6 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
     const FEED_ID = 2;
     // поддерживаемая версия ядра
     const FOR_CORE_VERSION = '1.0.0';
-    // режим эмуляции запросов (только для разработки)
-    // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
-    protected const EMULATE_MODE = false;
     // дебаг-режим (только для разработки)
     protected const DEBUG = true;
 
@@ -38,7 +35,7 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
             'mode'    => 'rss',
 
             // максимальное количество новостей, берушихся с витрины
-            //            'itemsLimit' => 10,
+            //            'itemsLimit' => 100,
 
             // настройки сайта
             'site'    => [
