@@ -64,7 +64,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-alfa';
+    private const VERSION = '1.0.0-beta';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -254,31 +254,30 @@ class ParserCore
             // css-селектор для контейнера карточки
             // (все дальнейшие пути строятся относительно этого контейнера)
             // (обязательный)
-            'container'     => '',
+            'container'        => '',
 
             // css-селектор для основного текста
             // (для заполнения модели NewsPostItem)
             // (обязательный)
-            'element-text'  => '',
+            'element-text'     => '',
 
             // css-селектор для получения даты создания новости
             // (заполняется только, если отсутствует в витрине)
-            'element-date'  => '',
+            'element-date'     => '',
 
             // css селектор для получения картинки
             // !должен содержать конечный аттрибут src! (например: img.main-image[src])
             // (заполняется только, если отсутствует в витрине)
-            'element-image' => '',
+            'element-image'    => '',
 
             // css-селектор для цитаты
-            // (если не заполнено, то по умолчанию берутся теги: blockquote и q)
             // (опционально)
-            //                'element-quote'       => '',
+            'element-quote'    => '',
 
             // игнорируемые css-селекторы
             // (можно через запятую)
             // (опционально)
-            //                'ignore-selectors'    => '',
+            'ignore-selectors' => '',
         ]
     ];
 
@@ -573,11 +572,266 @@ class ParserCore
             }
         }
 
-        //        print_r($itemUrls);
-        print_r($itemsParsed);
-        die;
+        if (empty($itemsParsed))
+        {
+            throw new Exception('Пустой результат $itemsParsed');
+        }
 
-        return [];
+        static::showLog(PHP_EOL . '----------------------------------');
+        static::showLog('  начинаем перевод данных в формат клиента...');
+        static::showLog('----------------------------------');
+
+        $posts = $this->getAdpativeToParser1500($itemsParsed);
+        //        print_r($itemUrls);
+        //        print_r($posts);
+        //        die;
+
+        return $posts;
+    }
+
+    protected function getAdpativeToParser1500(array $cards)
+    : array {
+        $posts = [];
+
+        /**
+         * Class NewsPost
+         *
+         * @package app\components\parser
+         * @property string   parser
+         * @property string   title
+         * @property string   description
+         * @property DateTime createDate
+         * @property string   original
+         * @property ?string  image
+         * @property array    items
+         */
+        /**
+         * NewsPostItem constructor
+         *
+         * @param int         $type        PostItemType
+         * @param string|null $text        text item
+         * @param string|null $image       url to image
+         * @param string|null $link        url external link
+         * @param int|null    $headerLevel header level for type HEADER
+         * @param string|null $youtubeId   video youtube id
+         */
+
+        if ($this->items)
+        {
+            foreach ($this->items as $url => $item)
+            {
+                $listItem = $item;
+                $cardItem = $cards[$url] ?? null;
+
+                $title       = '';
+                $date        = '';
+                $image       = '';
+                $description = '';
+
+                // мержим значения
+
+                // description
+                if (!empty($listItem['description']))
+                {
+                    $description = $listItem['description'];
+                }
+                elseif (!empty($cardItem['description']))
+                {
+                    $description = $cardItem['description'];
+                }
+
+                //                $description = '';
+                $description = $this->substrMax($description, 40);
+
+                //                var_dump($description);
+                //                die;
+
+                // title
+                if (!empty($listItem['title']))
+                {
+                    $title = $listItem['title'];
+                }
+                elseif (!empty($description))
+                {
+                    $title = $description;
+                }
+
+                if (empty($description))
+                {
+                    $description = $title;
+                }
+
+                // date
+                if (!empty($listItem['date']))
+                {
+                    $date = $listItem['date'];
+                }
+                elseif (!empty($cardItem['date']))
+                {
+                    $date = $cardItem['date'];
+                }
+
+                // image
+                if (!empty($listItem['image']))
+                {
+                    $image = $listItem['image'];
+                }
+                elseif (!empty($cardItem['image']))
+                {
+                    $image = $cardItem['image'];
+                }
+
+
+                // Create Post
+                $Post = new NewsPost(
+                    static::class,
+                    $title,
+                    $description,
+                    $date,
+                    $url,
+                    $image
+                );
+
+                // add data to post
+                if (!empty($cardItem['data']))
+                {
+                    foreach ($cardItem['data'] as $data)
+                    {
+                        switch ($data['type'])
+                        {
+                            case 'header':
+                                $level = substr($data['tag'], 1, 1);
+
+                                if (!$level)
+                                {
+                                    $level = 1;
+                                }
+
+                                $Post->addItem(
+                                    new NewsPostItem(
+                                        NewsPostItem::TYPE_HEADER,
+                                        $data['text'],
+                                        null,
+                                        null,
+                                        $level,
+                                        null
+                                    ));
+                                break;
+
+                            case 'link':
+                                $Post->addItem(
+                                    new NewsPostItem(
+                                        NewsPostItem::TYPE_LINK,
+                                        $data['text'],
+                                        null,
+                                        $data['url'],
+                                        null,
+                                        null
+                                    ));
+                                break;
+
+                            case 'text':
+                                // вырезаем текст меньше 5 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
+                                if (strlen($data['text']) <= 5 && !preg_match('/[^\s.,\?\!]+/', $data['text']))
+                                {
+                                    break;
+                                }
+
+                                $Post->addItem(
+                                    new NewsPostItem(
+                                        NewsPostItem::TYPE_TEXT,
+                                        $data['text'],
+                                        null,
+                                        null,
+                                        null,
+                                        null
+                                    ));
+                                break;
+
+                            case 'video':
+                                if (!empty($data['value']))
+                                {
+                                    $Post->addItem(
+                                        new NewsPostItem(
+                                            NewsPostItem::TYPE_VIDEO,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            $data['value']
+                                        ));
+                                }
+                                break;
+
+                            case 'image':
+                                if (!empty($data['url']))
+                                {
+                                    $Post->addItem(
+                                        new NewsPostItem(
+                                            NewsPostItem::TYPE_IMAGE,
+                                            $data['text'],
+                                            $data['url'],
+                                            null,
+                                            null,
+                                            null
+                                        ));
+                                }
+                                break;
+                        }
+                    }
+                }
+
+                $posts[] = $Post;
+
+                //                print_r($Post);
+                //                echo '-----' . PHP_EOL;
+                //                print_r($listItem);
+                //                print_r($cardItem);
+
+                //                die;
+                //                print_r($cardItem);
+            }
+        }
+
+        return $posts;
+    }
+
+    private function substrMax(string $string, int $max = 200)
+    : string {
+        if (empty($string))
+        {
+            return '';
+        }
+
+        $len = strlen($string);
+
+        if ($len > $max)
+        {
+            $stringStripped = substr($string, 0, $max);
+
+            preg_match_all('/[\s.,?!]/', $stringStripped, $matches, PREG_OFFSET_CAPTURE);
+
+            //            $pos = isset($matches[0][1]) ? $matches[0][1] : $max;
+
+            $pos = 0;
+
+            if (isset($matches[0]) && is_array($matches[0]))
+            {
+                foreach ($matches[0] as $match)
+                {
+                    if (!empty($match[1]))
+                    {
+                        $pos = $match[1] > $pos ? $match[1] : $pos;
+                    }
+                }
+            }
+
+            //            print_r($matches);
+
+            return substr($stringStripped, 0, $pos + 1);
+        }
+
+        return $string;
     }
 
     /**
@@ -674,13 +928,95 @@ class ParserCore
         return $item;
     }
 
-    // @FEATURE вырезание игнорируемых CSS-селекторов из ignore-selectors
+    // @feature вырезание игнорируемых CSS-селекторов из ignore-selectors
     // включая element-image, element-title, element-description. Если они ...
     protected function getHtmlWithoutIgnoredSelectors(string $html)
     : string {
-        // TYPE_QUOTE
+        $selectors = $this->config['element']['ignore-selectors'] ?? '';
 
-        // ignore-selectors
+        if ($selectors)
+        {
+            $selectors = explode(',', $selectors);
+
+            foreach ($selectors as $selector)
+            {
+                $html = $this->replaceNodeFromHtml($html, trim($selector));
+            }
+        }
+
+        return $html;
+    }
+
+    /**
+     * Заменяем в тексте element-quote CSS-селектор на <blockquote>
+     *
+     * @param string $html
+     *
+     * @return string
+     */
+    protected function getHtmlWithSubstitutedQuotes(string $html)
+    : string {
+        $selector = $this->config['element']['element-quote'] ?? '';
+
+        if (strlen($selector) > 1)
+        {
+            $html = $this->replaceNodeFromHtml($html, $selector, 'blockquote');
+        }
+
+        return $html;
+    }
+
+    /**
+     *  Подменяем CSS-селектор на просто тег (пока без поддержки классов)
+     *  Также имеет режим удаления, если не указать $toTag
+     *
+     *  Пример:
+     *  $this->replaceNodeFromHtml($html, 'div.blockquote', 'blockquote');
+     *
+     *  <div class="blockquote">bla-bla-bla</div> ===> <blockquote>bla-bla-bla</blockquote>
+     *
+     *
+     * @param string      $html
+     * @param string      $sourceSelector
+     * @param string|null $toTag
+     * @param string      $mode
+     *
+     * @return string
+     */
+    private function replaceNodeFromHtml(string $html, string $sourceSelector, ?string $toTag = null, string $mode = 'substitute')
+    : string {
+        $Crawler = new Crawler($html);
+
+        $substitutions = [];
+
+        $Crawler->filter($sourceSelector)->each(function (Crawler $element, $i) use (&$substitutions, $toTag, $mode) {
+            $outerHtml = $element->outerHtml();
+
+
+            if ($mode == 'substitute' && !empty($toTag))
+            {
+                $htmlNew = '<' . $toTag . '>' . $element->html() . '</' . $toTag . '>';
+            }
+            else
+            {
+                $htmlNew = '';
+            }
+
+
+            $substitutions[] = [
+                'source' => $outerHtml,
+                'to'     => $htmlNew
+            ];
+        });
+
+        if ($substitutions)
+        {
+            foreach ($substitutions as $substitution)
+            {
+                $html = str_replace($substitution['source'], $substitution['to'], $html);
+            }
+        }
+
         return $html;
     }
 
@@ -695,6 +1031,7 @@ class ParserCore
     protected function getCardTextHtml(string $html)
     : string {
         $html = $this->getHtmlWithoutIgnoredSelectors($html);
+        $html = $this->getHtmlWithSubstitutedQuotes($html);
 
         // коррекция тегов для правильной обрезки
         // (в частности нужно добавить пробелы перед <td> и <li>, чтобы текст не сливался
@@ -707,143 +1044,26 @@ class ParserCore
         return $html;
     }
 
+    /**
+     * Разбор текста новости на куски
+     *
+     * @param string $html
+     *
+     * @return array
+     */
     protected function getItemData(string $html)
     : array {
-        //                echo $html;
+        //        echo $html;
         //        echo PHP_EOL . '-----------' . PHP_EOL;
 
-        $variant = 'Вариант 1';
+        $itemData = [];
 
-        // используем нативную PHP функцию
-        if ('Вариант 1' == $variant)
-        {
-            $dom = new \DOMDocument();
-
-            // чтобы принимал HTML5 теги прячем временно ошибки
-            libxml_use_internal_errors(true);
-
-            // @TODO могут быть проблемы с кодировкой
-            // добавляем тег [xml encoding="utf-8"] чтобы исправить кодировку
-            $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-
-            // When using this funtion, be sure to clear your internal error buffer. If you dn't and you are using this in a long running process, you may find that all your memory is used up.
-            libxml_clear_errors();
-
-            $xpath = new \DOMXPath($dom);
-
-            // use the fact that PHP DOM wraps everything into the body and get the text() and other tags
-            $entries = $xpath->query('//body/text() | //body/*');
-
-            $itemData = [];
-
-            if (!empty($entries))
-            {
-                foreach ($entries as $entry)
-                {
-                    $tagName = !empty($entry->tagName) ? $entry->tagName : ':text';
-                    $val     = $this->stripText($entry->nodeValue);
-                    $text    = $this->stripText($entry->textContent);
-
-                    // обработка на основе тега
-                    $data = [];
-
-                    switch ($tagName)
-                    {
-                        // просто текст
-                        case 'p':
-                        case 'text':
-                            if (!empty($val))
-                            {
-                                $data = [
-                                    'type' => self::TYPE_TEXT,
-                                    'text' => $val,
-                                    'tag'  => $tagName,
-                                ];
-                            }
-                            break;
-
-                        // заголовки
-                        case 'h1' :
-                        case 'h2' :
-                        case 'h3' :
-                        case 'h4' :
-                        case 'h5' :
-                        case 'h6' :
-                            $data = [
-                                'type' => self::TYPE_HEADER,
-                                'text' => $text,
-                                'tag'  => $tagName,
-                            ];
-                            break;
-
-                        case 'img':
-                            //                            $data = [
-                            //                                'type' => self::TYPE_IMAGE,
-                            //                                // в текст можно было б сохранять alt например
-                            //                                'text' => $entry->getAttribute('alt'),
-                            //                                'url'  => $this->getUrl($entry->getAttribute('src')),
-                            //                                'tag'  => $tagName,
-                            //                            ];
-                            break;
-
-                        case 'iframe':
-                        case 'video':
-                            $src = '';
-
-                            if ($tagName == 'iframe')
-                            {
-                                $src = $entry->getAttribute('src');
-                            }
-                            elseif ($tagName == 'video')
-                            {
-                                $source = $entry->getElementsByTagName('source')->item(0);
-
-                                if ($source)
-                                {
-                                    $src = $source->getAttribute('src');
-                                }
-                            }
-
-                            //                            $data = [
-                            //                                'type'  => self::TYPE_VIDEO,
-                            //                                'tag'   => $tagName,
-                            //                                'value' => static::getYoutubeIdFromUrl($src),
-                            //                            ];
-                            break;
-
-                        // @TODO quote-selector
-                        case 'blockquote':
-                        case 'q':
-                            //                            $data = [
-                            //                                'type' => self::TYPE_QUOTE,
-                            //                                'tag'  => $tagName,
-                            //                                'text' => $text,
-                            //                            ];
-                            break;
-                    }
-
-                    if (!empty($data))
-                    {
-                        $itemData[] = $data;
-                    }
-                    //                    echo $tagName . PHP_EOL;
-                    //                    echo $val . PHP_EOL;
-                    //                    //                echo $entry->nodeValue;
-                    //                    print_r($entry);
-                    //                    echo '---' . PHP_EOL;
-                }
-            }
-            //            print_r($itemData);
-            //            die;
-
-        }
-        // с использованием Crawler (проблема - untagged text)
-        elseif ('Вариант 2' == $variant)
+        if ('с использованием Crawler')
         {
             // crawler сам дополняет код <html> и <body>
             $Crawler = new Crawler($html);
 
-            $elements = $Crawler->filter('');
+            $elements = $Crawler->filterXPath('//body/text() | //body/*');
 
             if (!count($elements))
             {
@@ -852,18 +1072,189 @@ class ParserCore
 
             foreach ($elements as $element)
             {
-                //            $element = new Crawler($content);
-                //
-                //            $elName = (isset($element->nodeName)) ? $element->nodeName : ':text';
-                //            var_dump($element->nodeName);
-                var_dump($element);
-            }
-        }
+                $tagName = !empty($element->nodeName) ? $element->nodeName : '#text';
+                $val     = $this->stripText($element->nodeValue);
+                $text    = $this->stripText($element->textContent);
+                $data    = [];
 
-        // попробовать обернуть весь текст в <text>text</text> через регулярное выражение
-        elseif ('Вариант 3' == $variant)
-        {
-            // ....
+                // @  не забыть убрать
+                //                if ($tagName != 'blockquote')
+                //                {
+                //                    continue;
+                //                }
+
+                // обработка на основе тега
+                //@todo чтобы h1 не дублировал название и текст не содержал description
+                switch ($tagName)
+                {
+                    // просто текст
+                    case 'p':
+                    case '#text':
+                        if (!empty($val))
+                        {
+                            $data = [
+                                'type' => self::TYPE_TEXT,
+                                'text' => $val,
+                                'tag'  => $tagName,
+                            ];
+                        }
+                        break;
+
+                    // заголовки
+                    case 'h1' :
+                    case 'h2' :
+                    case 'h3' :
+                    case 'h4' :
+                    case 'h5' :
+                    case 'h6' :
+                        $data = [
+                            'type' => self::TYPE_HEADER,
+                            'text' => $text,
+                            'tag'  => $tagName,
+                        ];
+                        break;
+
+                    case 'img':
+                        $data = [
+                            'type' => self::TYPE_IMAGE,
+                            'text' => $element->getAttribute('alt'),
+                            'url'  => $this->getUrl($element->getAttribute('src')),
+                            'tag'  => $tagName,
+                        ];
+                        break;
+
+                    case 'iframe':
+                    case 'video':
+                        $src = '';
+
+                        if ($tagName == 'iframe')
+                        {
+                            $src = $element->getAttribute('src');
+                        }
+                        elseif ($tagName == 'video')
+                        {
+                            $source = $element->getElementsByTagName('source')->item(0);
+
+                            if ($source)
+                            {
+                                $src = $source->getAttribute('src');
+                            }
+                        }
+
+                        if (!empty($src))
+                        {
+                            $data = [
+                                'type'  => self::TYPE_VIDEO,
+                                'tag'   => $tagName,
+                                'value' => static::getYoutubeIdFromUrl($src),
+                            ];
+                        }
+                        break;
+
+                    case 'blockquote':
+                    case 'q':
+                        $data = [
+                            'type' => self::TYPE_QUOTE,
+                            'tag'  => $tagName,
+                            'text' => $text,
+                        ];
+                        break;
+
+                    case 'a':
+                        $youtubeId = '';
+                        $url       = $this->getUrl($element->getAttribute('href'));
+
+                        //                        var_dump($url);
+
+                        if (empty($url))
+                        {
+                            break;
+                        }
+
+                        // берем только родные ссылки. Внешние игнорим
+                        // это внешние ссылки
+                        if (strpos($url, $this->siteUrl) === false)
+                        {
+                            //                            echo '- это внешняя ссылка';
+                            // внешнюю оставляем только ссылку на ютуб
+                            if ($youtubeId = $this::getYoutubeIdFromUrl($url))
+                            {
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        // для обработки смердженных типов, аля <a href="https://youtu.be/2jzecQ0W1cQ">Ссылка на ютуб</a>
+                        if (!empty($youtubeId))
+                        {
+                            $data = [
+                                'type'  => self::TYPE_VIDEO,
+                                'tag'   => $tagName,
+                                'value' => $youtubeId,
+                            ];
+                        }
+                        else
+                        {
+                            // если в тексте ссылки содержатся allowed tags
+                            // нужно их обработать
+                            //                            var_dump($element->childNodes);
+                            if ($element->childNodes->length >= 2)
+                            {
+                                $nodeText = '';
+
+                                foreach ($element->childNodes as $node)
+                                {
+                                    //                                    print_r($node);
+                                    if (isset($node->nodeName))
+                                    {
+                                        // берем альт картинки
+                                        if ($node->nodeName == 'img')
+                                        {
+                                            $nodeText .= $this->getUrl($node->getAttribute('src')) . ' ';
+                                        }
+                                        elseif (in_array($node->nodeName, $this->allowedTags))
+                                        {
+                                            $nodeText .= $node->textContent . ' ';
+                                        }
+                                        elseif ($node->nodeName == '#text')
+                                        {
+                                            $nodeText .= $node->textContent . ' ';
+                                        }
+                                    }
+                                }
+
+                                // делаем ссылку у которой текст = URL внутренней картинки и/или текст
+                                if (!empty($nodeText) && !empty($url))
+                                {
+                                    $data = [
+                                        'type' => self::TYPE_LINK,
+                                        'tag'  => $tagName,
+                                        'text' => $nodeText,
+                                        'url'  => $url
+                                    ];
+                                }
+                            }
+                            else
+                            {
+                                // сохраняем как обычную ссылку
+                                $data = [
+                                    'type' => self::TYPE_LINK,
+                                    'tag'  => $tagName,
+                                    'text' => $text,
+                                    'url'  => $url
+                                ];
+                            }
+                        }
+                        break;
+                }
+
+                if (!empty($data))
+                {
+                    $itemData[] = $data;
+                }
+            }
         }
 
         return $itemData;
@@ -898,61 +1289,6 @@ class ParserCore
         return trim($text);
     }
 
-    //        protected function getItemTextData(array $data, string $type)
-    //        : array {
-    //
-    //            $itemsTextData[$this->currentUrl] = [
-    //
-    //            ];
-    //        }
-
-    public function testGetDate()
-    {
-        static::showLog('--- format= ' . $this->dateFormat . ' | zone= ' . $this->timeZone . ' ---');
-        $valuesDate = [
-            '',
-            '17:00',
-            '16.10.2020 | 18:10',
-            '15.10.2020',
-            '15.10.2020 10:00',
-            '15.10.2020, 10:00',
-            '15/10/2020 10:00:00',
-            '15-10-2020 10.00',
-            '10:00 15.10.2020',
-            //            '2020.01.01',
-        ];
-        $valuesText = [
-            'сегодня',
-            'сегодня в 2 часа',
-            'Сегодня, 16:36',
-            '16 октября 2020 года, 19:01',
-            '19:01 от 16 октября 2020 года',
-            '<a href="https://www.fondsk.ru/authors/vladislav-gulevich-37.html">Владислав ГУЛЕВИЧ</a> | 16.10.2020',
-            'только что',
-            '16.10 в 21:30',
-            '2 часа назад',
-            '7 часов назад',
-            'вчера в 19:10',
-            'вчера',
-            '1 октября',
-            '11 октября 2019',
-            '11 октября 2019, 10:00:00',
-            '16 Окт, 2020',
-            '',
-            'uqgwejhjvjv',
-            'фигня какая-то'
-        ];
-
-        //                $values = $valuesDate;
-        //        $values = $valuesText;
-        $values = array_merge($valuesDate, $valuesText);
-
-        foreach ($values as $value)
-        {
-            static::showLog($value . "\t" . '  => ' . $this->getDate($value));
-        }
-    }
-
     /**
      * Парсинг даты (числовой или строковый формат)
      *
@@ -970,8 +1306,11 @@ class ParserCore
         // вырезаем лишние символы
         //        $date = preg_replace('~\b[а-я]{1,2}\b~', '', $date);
         //        echo $date;
-        $date = preg_replace('~[/\\\\-]~', '.', $date);
-        $date = str_replace(',', '', $date);
+        if ($this->mode != 'rss')
+        {
+            $date = preg_replace('~[/\\\\-]~', '.', $date);
+            $date = str_replace(',', '', $date);
+        }
 
         // есть текст
         if (preg_match('/[\p{Cyrillic}]+/u', $date))
@@ -990,7 +1329,7 @@ class ParserCore
 
         if (!empty($dateTime))
         {
-            if (0 && 'переводим в формат Гринвича')
+            if (1 && 'переводим в формат Гринвича')
             {
                 $dateTime2 = new \DateTime(null, new DateTimeZone('UTC'));
                 $dateTime2->setTimestamp($dateTime->getTimestamp());
@@ -1019,27 +1358,6 @@ class ParserCore
         //        echo $date . PHP_EOL;
         //        echo $this->timeZone . PHP_EOL;
 
-        if ('дополняем дату до полного вида')
-        {
-            // пытаемся определить дату через PHP
-            $parsedDate = date_parse($date);
-
-            //            print_r($parsedDate);
-
-            if ($parsedDate)
-            {
-                if (empty($parsedDate['day']) && empty($parsedDate['month']) && empty($parsedDate['year']))
-                {
-                    $date = date('d') . '.' . date('m') . '.' . date('Y') . ' ' .
-                        ($parsedDate['hour'] ? $parsedDate['hour'] : '00') . ':' . ($parsedDate['minute'] ? $parsedDate['minute'] : '00');
-                }
-                else
-                {
-                    $date = $parsedDate['day'] . '.' . $parsedDate['month'] . '.' . $parsedDate['year'] . ' ' .
-                        ($parsedDate['hour'] ? $parsedDate['hour'] : '00') . ':' . ($parsedDate['minute'] ? $parsedDate['minute'] : '00');
-                }
-            }
-        }
 
         if ($this->mode === 'rss')
         {
@@ -1047,6 +1365,27 @@ class ParserCore
         }
         else
         {
+            if ('дополняем дату до полного вида')
+            {
+                // пытаемся определить дату через PHP
+                $parsedDate = date_parse($date);
+
+                //            print_r($parsedDate);
+
+                if ($parsedDate)
+                {
+                    if (empty($parsedDate['day']) && empty($parsedDate['month']) && empty($parsedDate['year']))
+                    {
+                        $date = date('d') . '.' . date('m') . '.' . date('Y') . ' ' .
+                            ($parsedDate['hour'] ? $parsedDate['hour'] : '00') . ':' . ($parsedDate['minute'] ? $parsedDate['minute'] : '00');
+                    }
+                    else
+                    {
+                        $date = $parsedDate['day'] . '.' . $parsedDate['month'] . '.' . $parsedDate['year'] . ' ' .
+                            ($parsedDate['hour'] ? $parsedDate['hour'] : '00') . ':' . ($parsedDate['minute'] ? $parsedDate['minute'] : '00');
+                    }
+                }
+            }
             $dateTime = DateTimeImmutable::createFromFormat($this->dateFormat, $date, $timeZone);
         }
 
@@ -1057,7 +1396,7 @@ class ParserCore
         // последний шанс узнать дату
         else
         {
-            // @FEATURE например из meta или header
+            // @feature например из meta или header
         }
 
         return null;
@@ -1363,9 +1702,26 @@ class ParserCore
     }
 
     // возвращаем абсолютную ссылку
+    // @todo потестить
     private function getUrl(?string $url)
     : ?string {
-        return ($url) ? UriResolver::resolve($url, $this->siteUrl) : null;
+        // корректируем, если в ссылке содержатся русские буквы
+        //        if (preg_match('/[\p{Cyrillic}]+/u', $url))
+        //        {
+        //            echo 'русские буквы!' . PHP_EOL;
+        //            //            die;
+        //
+        //            //            $pos = strrpos($url, '/') + 1;
+        //            //            $url = substr($url, 0, $pos) . urlencode(substr($url, $pos));
+        //        }
+
+        //        echo '-' . $url . PHP_EOL;
+
+        $url = ($url) ? UriResolver::resolve($url, $this->siteUrl) : null;
+
+        //        echo '+' . $url . PHP_EOL;
+
+        return $url;
     }
 
     /**
@@ -1418,30 +1774,37 @@ class ParserCore
             // контент получен
             if ($responseInfo['http_code'] >= 200 && $responseInfo['http_code'] < 300)
             {
-                // решаем проблемы кодировки. Все должно быть переведено в utf-8
-                $charset    = '';
-                $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
-
-                if (strpos($charsetRaw, 'charset=') !== false)
+                if ($this->mode == 'rss')
                 {
-                    $charset = str_replace("text/html; charset=", "", $charsetRaw);
+                    // перекодировка для кривых xml
                 }
                 else
                 {
-                    preg_match('/charset=([-a-z0-9_]+)/i', $responseHtml, $charsetMatches);
+                    // решаем проблемы кодировки. Все должно быть переведено в utf-8
+                    $charset    = '';
+                    $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
 
-                    if (!empty($charsetMatches[1]))
+                    if (strpos($charsetRaw, 'charset=') !== false)
                     {
-                        $charset = trim($charsetMatches[1]);
+                        $charset = str_replace("text/html; charset=", "", $charsetRaw);
                     }
-                }
+                    else
+                    {
+                        preg_match('/charset=([-a-z0-9_]+)/i', $responseHtml, $charsetMatches);
 
-                $charset = strtolower($charset);
+                        if (!empty($charsetMatches[1]))
+                        {
+                            $charset = trim($charsetMatches[1]);
+                        }
+                    }
 
-                // делаем перекодировку
-                if (!empty($charset) && $charset !== 'utf-8')
-                {
-                    $responseHtml = mb_convert_encoding($responseHtml, 'utf-8', $charset);
+                    $charset = strtolower($charset);
+
+                    // делаем перекодировку
+                    if (!empty($charset) && $charset !== 'utf-8')
+                    {
+                        $responseHtml = mb_convert_encoding($responseHtml, 'utf-8', $charset);
+                    }
                 }
 
                 // @FEAUTURE проверяем что в html нет браузерного редиректа
@@ -1686,5 +2049,57 @@ class ParserCore
         }
 
         return $emulateData[$url] ?? null;
+    }
+
+    /*
+     *
+     * -------- ТЕСТЫ ----------
+     *
+     */
+    public function testGetDate()
+    {
+        static::showLog('--- format= ' . $this->dateFormat . ' | zone= ' . $this->timeZone . ' ---');
+        $valuesDate = [
+            '',
+            '17:00',
+            '16.10.2020 | 18:10',
+            '15.10.2020',
+            '15.10.2020 10:00',
+            '15.10.2020, 10:00',
+            '15/10/2020 10:00:00',
+            '15-10-2020 10.00',
+            '10:00 15.10.2020',
+            //            '2020.01.01',
+        ];
+        $valuesText = [
+            'сегодня',
+            'сегодня в 2 часа',
+            'Сегодня, 16:36',
+            '16 октября 2020 года, 19:01',
+            '19:01 от 16 октября 2020 года',
+            '<a href="https://www.fondsk.ru/authors/vladislav-gulevich-37.html">Владислав ГУЛЕВИЧ</a> | 16.10.2020',
+            'только что',
+            '16.10 в 21:30',
+            '2 часа назад',
+            '7 часов назад',
+            'вчера в 19:10',
+            'вчера',
+            '1 октября',
+            '11 октября 2019',
+            '11 октября 2019, 10:00:00',
+            '16 Окт, 2020',
+            '',
+            'uqgwejhjvjv',
+            'фигня какая-то'
+        ];
+
+        //                $values = $valuesDate;
+        //        $values = $valuesText;
+        $values = array_merge($valuesDate, $valuesText);
+
+        foreach ($values as $value)
+        {
+            static::showLog($value . "\t" . '  => ' . $this->getDate($value));
+        }
     }
 }

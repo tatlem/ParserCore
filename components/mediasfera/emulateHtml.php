@@ -12,26 +12,37 @@ return [
     
     <div id="text">
     
-<h1>h1-text</h1>
-text-after-h1
-    <p>Простой текст</p>
-    <p>Проверка текста&nbsp;который может<br> 
-    &laquo;иметь&raquo; вся</p>
-    
-    без параграфа
+Простой текст без параграфа
+
+<p>Проверка текста&nbsp;который может<br> 
+&laquo;иметь&raquo; вся &quot;ку≥&quot;"'ё1234567890-=йцукенгшщзхъфывапролджэ\ячсмитьбю.
+§1234567890-==qwertyuiop[]asdfghjkl;'\`zxcvbnm,./
+</p>
+
+<div><div>текст в дивах</div></div>
+
+без параграфа
+
+<div class="reklama">Рекламный модуль - нужно вырезать</div>
+
+<h2>Заголовок 2 <span class="bad">Нужно вырезать</span></h2>
     
 <!-- headers -->
 <h1>h1-text</h1>
 text-after-h1
 <h2>h2-text</h2>
+., ?!
 <h3>h3-text</h3>
+.....
 <h4>h4-text</h4>
+...но
 <h5>h5-text</h5>
+и????
 <h6>h6-text</h6>
-
 <!-- images -->
 <img src="/картинка1" alt="альт-текст картинка1">
 <img src="/../testImage.JPG">
+<div class="ct-ni-img" img="https://kazved.ru/attachments/d189f8bb8708655d9a49268607b82b00a7e11e8e/store/fill/540/300/616a713c7ff5b896f24c0f78dc159d7ab474002e5c583b8a403b4d24946a/1+%D0%BC%D1%83%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg"></div>
 
 <!-- youtube -->
 <iframe width="560" height="315" src="https://www.youtube.com/embed/ihRQfjOgRSM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -39,24 +50,34 @@ text-after-h1
     <source src="https://youtu.be/vsjzbNik9RE">
 </video>
 
-<!-- links -->
-<a href="/relative">link-text1</a>
-<a href="/%d0%ba%d0%b0%d0%ba%d0%b0%d1%8f-%d1%82%d0%be%20%d0%b4%d0%b8%d1%87%d1%8c/">какая-то дичь должна быть в URL</a>
-<a href="https://22.мвд.рф/" target="_blank">link-text2 </a>
-<a href=" https://test/news-bolvanka/another">link-text-native-page</a>
-<a href="https://foriegn.space/dir">link-text-foreign-page</a>
-<div><a href="#url1">allowed <strong>strong</strong> link-text</a></div>
-
 <!-- quotes by html -->
+<div class="quote-custom">Кастомная <b>strong</b> <a href="/aasdd">цитата1</a></div>
 <blockquote>
     <h2>Цитата H2-text</h2>
     цитата1
 </blockquote>
 <q>цитата2</q>
+<div class="quote-custom">Кастомная цитата2</div>
+
+
+<!-- links -->
+<a href="http://wmbase2.fingli.ru/frontend/web/images/по-Русски/Русская картинка.jpg">русская ссылка</a>
+<a href="https://test/frontend/web/images/по-Русски/Русская картинка.jpg">русская ссылка</a>
+<a href=" https://test/page ">с пробелами</a>
+<a href="https://kazved.ru//attachments/33e58ac51ab9f96121ffdff8dff6fc89f582598e/store/fill/780/440/616a713c7ff5b896f24c0f78dc159d7ab474002e5c583b8a403b4d24946a/1 муратов.jpg">говорят некорректная ссылка</a>
+<a href="https://kazved.ru/attachments/33e58ac51ab9f96121ffdff8dff6fc89f582598e/store/fill/780/440/616a713c7ff5b896f24c0f78dc159d7ab474002e5c583b8a403b4d24946a/1+%D0%BC%D1%83%D1%80%D0%B0%D1%82%D0%BE%D0%B2.jpg">корректная ссылка</a>
+<a name="якорь">Якорь</a>
+<a href="/relative">Относительный линк</a>
+<a href="/%d0%ba%d0%b0%d0%ba%d0%b0%d1%8f-%d1%82%d0%be%20%d0%b4%d0%b8%d1%87%d1%8c/">какая-то дичь должна быть в URL</a>
+<a href="https://22.мвд.рф/" target="_blank">Ссылка на мвд по-русски </a>
+<a href=" https://test/news-bolvanka/another">link-text-native-page</a>
+<div><a href="#url1">allowed <strong>strong</strong> link-text</a></div>
+
 
 <!-- incorrect model -->
-<a href="#url2"><img src="#img2"/></a>
-<a href="https://youtu.be/2jzecQ0W1cQ">youtube-link</a>
+<a href="/ссылка1"><img src="http://ya.ru/image/reklama.jpg"/>важный текст</a>
+<a href="/ссылка2"><img src="http://ya.ru/image/reklama.jpg"/> <h1>для смердженной <strong>ссылки</strong> </h1> еще текст</a>
+<a href="https://youtu.be/2jzecQ0W1cQ">Ссылка на ютуб</a>
 
 <!-- other tags with text -->
 <text>my-custom-text</text>
@@ -64,7 +85,6 @@ text-after-h1
 
 <ul><li>li-text1</li><li>li-text2</li></ul>
 
-text7</p>
 <p>text8</p>
 
 
@@ -81,11 +101,12 @@ HTML
 <?xml version="1.0" encoding="UTF-8" ?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
 <channel>
 <item>
-	<title>Заголовок</title>
+	<title>Тестоваая новость 1</title>
 	<author>fingli</author>
 	<pubDate>Thu, 15 Oct 2020 23:31:38 +0400</pubDate>
 	<link>https://test/news-bolvanka</link>
-	<description><![CDATA[ Всё об одном из удобнейших приспособлений для уборки участка<div style="clear:both;"></div> ]]></description>
+	<enclosure url="/test.jpg" type="image/jpeg"></enclosure>
+	<description><![CDATA[ Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка<div style="clear:both;"></div> ]]></description>
 </item>
 </channel>
 </rss>

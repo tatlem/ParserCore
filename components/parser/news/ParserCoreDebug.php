@@ -23,7 +23,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     const FOR_CORE_VERSION = '1.0.0';
     // режим эмуляции запросов (только для разработки)
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
-    protected const EMULATE_MODE = true;
+    protected const EMULATE_MODE = false;
     // включить дебаг-режим (только для разработки)
     protected const DEBUG = true;
     // дебаг-режим  (только для разработки) [core, default]
@@ -34,7 +34,8 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     {
         // 1 - desktop
         // 2 - rss
-        $configType = 2;
+        // 3 - CORE_ClassicalmusicnewsParsingRu_Parser
+        $configType = 3;
 
         if ($configType == 1)
         {
@@ -150,13 +151,13 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 // режимы работы парсера:
                 // rss - RSS витрина
                 // desktop - обычный сайт HTML
-                'mode'    => 'rss',
+                'mode'       => 'rss',
 
                 // максимальное количество новостей, берушихся с витрины
-                //                'itemsLimit' => 10,
+                'itemsLimit' => 10,
 
                 // настройки сайта
-                'site'    => [
+                'site'       => [
                     // протокол и домен
                     // (обязательный)
                     'url'         => 'https://test/',
@@ -183,7 +184,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 ],
 
                 // настройки витрины (режим RSS)
-                'rss'     => [
+                'rss'        => [
                     // относительный URL где находится RSS
                     // (обязательный)
                     'url'                 => '/rss.xml',
@@ -214,36 +215,141 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 ],
 
                 // настройка карточки элемента
-                'element' => [
+                'element'    => [
 
                     // css-селектор для контейнера карточки
                     // (все дальнейшие пути строятся относительно этого контейнера)
                     // (обязательный)
-                    'container'     => '#container',
+                    'container'        => '#container',
 
                     // css-селектор для основного текста
                     // (для заполнения модели NewsPostItem)
                     // (обязательный)
-                    'element-text'  => '#text',
+                    'element-text'     => '#text',
 
                     // css-селектор для получения даты создания новости
                     // (заполняется только, если отсутствует в витрине)
-                    'element-date'  => '',
+                    'element-date'     => '',
 
                     // css селектор для получения картинки
                     // !должен содержать конечный аттрибут src! (например: img.main-image[src])
                     // (заполняется только, если отсутствует в витрине)
-                    'element-image' => '',
+                    'element-image'    => '',
 
                     // css-селектор для цитаты
-                    // (если не заполнено, то по умолчанию берутся теги: blockquote и q)
                     // (опционально)
-                    //                'element-quote'       => '',
+                    'element-quote'    => '.quote-custom',
 
                     // игнорируемые css-селекторы
                     // (можно через запятую)
                     // (опционально)
-                    //                'ignore-selectors'    => '',
+                    'ignore-selectors' => '.reklama, span.bad',
+                ]
+            ];
+        }
+        elseif ($configType == 3)
+        {
+            $this->config = [
+                // режимы работы парсера:
+                // rss - RSS витрина
+                // desktop - обычный сайт HTML
+                'mode'       => 'rss',
+
+                // максимальное количество новостей, берушихся с витрины
+                'itemsLimit' => 10,
+
+                // настройки сайта
+                'site'       => [
+                    // протокол и домен
+                    // (обязательный)
+                    'url'        => 'https://www.classicalmusicnews.ru',
+
+                    // использовать юзер-агенты в http запросах.
+                    // можно передать значение: bot
+                    'user_agent' => 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/42.0',
+                    //                    'user_agent' => 'bot',
+
+                    // часовой пояс UTC.
+                    // Чтобы определить часовой пояс, нужно зайти на https://time.is/Moscow и выбрать ближайший крупный город к которому относится сайт
+                    // узнать UTC и прописать его в формате +XX00
+                    // Например, Москва: '+0300', Владивосток: '+1000'
+                    'time_zone'  => '+0300',
+
+                    // формат даты на исходном сайте (см. https://www.php.net/manual/ru/datetime.format.php)
+                    // d - день
+                    // m - месяц
+                    // Y - полный год
+                    // y - год, две цифры
+                    // H - час
+                    // i - минуты
+                    //                    'date_format' => 'd.m.Y',
+                ],
+
+                // настройки витрины (режим RSS)
+                'rss'        => [
+                    // относительный URL где находится RSS
+                    // (обязательный)
+                    'url'                 => '/feed',
+
+                    // css селектор для элемента витрины (желательно от корня)
+                    // (обязательный)
+                    'element'             => 'rss > channel > item',
+
+                    // css селектор для названия элемента (относительно элемента)
+                    // (обязательный)
+                    'element-title'       => 'title',
+
+                    // css селектор для описания элемента (относительно элемента)
+                    // (заполняется только, если отсутствует в карточке)
+                    'element-description' => 'description',
+
+                    // css селектор для картинки элемента (относительно элемента)
+                    // (заполняется только, если отсутствует в карточке)
+                    'element-image'       => 'enclosure[url]',
+
+                    // css селектор для даты элемента (относительно элемента)
+                    // (заполняется только, если отсутствует в карточке)
+                    'element-date'        => 'pubDate',
+
+                    // css селектор для ссылки (относительно элемента)
+                    // (обязательный)
+                    'element-link'        => 'link',
+                ],
+
+                // настройка карточки элемента
+                'element'    => [
+
+                    // css-селектор для контейнера карточки
+                    // (все дальнейшие пути строятся относительно этого контейнера)
+                    // (обязательный)
+                    'container'           => '.content-sidebar-wrap',
+
+                    // css-селектор для основного текста
+                    // (для заполнения модели NewsPostItem)
+                    // (обязательный)
+                    'element-text'        => 'main .entry-content',
+
+                    // css-селектор для получения даты создания новости
+                    // (заполняется только, если отсутствует в витрине)
+                    'element-date'        => '',
+
+                    // css-селектор для получения описания новости
+                    // (заполняется только, если отсутствует в витрине)
+                    'element-description' => '',
+
+                    // css селектор для получения картинки
+                    // !должен содержать конечный аттрибут src! (например: img.main-image[src])
+                    // (заполняется только, если отсутствует в витрине)
+                    'element-image'       => 'img.size-medium[src]',
+
+                    // css-селектор для цитаты
+                    // (опционально)
+                    'element-quote'       => '',
+
+                    // игнорируемые css-селекторы
+                    // (можно через запятую)
+                    // (опционально)
+                    'ignore-selectors'    => '',
                 ]
             ];
         }
@@ -260,6 +366,10 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         $items = $Parser->getItems();
         $posts = $Parser->getCards(array_keys($items));
 
+        //        echo '<pre>';
+        //        print_r($posts);
+        //        echo '</pre>';
+        //        die;
 
         return $posts;
     }
