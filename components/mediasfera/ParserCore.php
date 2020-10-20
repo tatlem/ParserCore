@@ -557,9 +557,9 @@ class ParserCore
 
         $posts = $this->getAdpativeToParser1500($itemsParsed);
 
-        static::showLog(PHP_EOL . '----------------------------------');
-        static::showLog(' Заканчиваем работу парсера. Создано: ' . count($posts));
-        static::showLog('----------------------------------');
+        static::showLog(PHP_EOL . '--------------------------------------------------------------------', 'success');
+        static::showLog(' Заканчиваем работу парсера. Создано: ' . count($posts), 'success');
+        static::showLog('--------------------------------------------------------------------', 'success');
 
         return $posts;
     }
@@ -1899,6 +1899,15 @@ class ParserCore
                 }
             }
 
+            if ($mode == 'warning')
+            {
+                echo "\033[31m";
+            }
+            elseif ($mode == 'success')
+            {
+                echo "\033[32mq";
+            }
+
             if (strlen($message) > $maxLen)
             {
                 echo substr($message, 0, $maxLen) . PHP_EOL . '[...лог обрезан...]';
@@ -1906,6 +1915,15 @@ class ParserCore
             else
             {
                 echo $message;
+            }
+
+            if ($mode == 'warning')
+            {
+                echo "\033[0m";
+            }
+            elseif ($mode == 'success')
+            {
+                echo "\033[0m";
             }
 
             if ($break)

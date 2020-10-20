@@ -23,7 +23,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     const FOR_CORE_VERSION = '1.0.0';
     // режим эмуляции запросов (только для разработки)
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
-    protected const EMULATE_MODE = false;
+    protected const EMULATE_MODE = true;
     // включить дебаг-режим (только для разработки)
     protected const DEBUG = true;
     // дебаг-режим  (только для разработки) [core, default]
@@ -35,7 +35,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         // 1 - desktop
         // 2 - rss
         // 3 - CORE_ClassicalmusicnewsParsingRu_Parser
-        $configType = 3;
+        $configType = 2;
 
         if ($configType == 1)
         {
