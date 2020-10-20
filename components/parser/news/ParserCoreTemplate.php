@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Стартовый шаблон для разработчика
  *
  * Данный класс предназначается для нужд шаблонизации
@@ -18,7 +17,7 @@ namespace app\components\parser\news;
 use app\components\mediasfera\ParserCore;
 use app\components\parser\ParserInterface;
 
-class CORE_Parser extends ParserCore implements ParserInterface
+class CORE_XXX_Parser extends ParserCore implements ParserInterface
 {
     const USER_ID = 2;
     const FEED_ID = 2;
@@ -38,6 +37,9 @@ class CORE_Parser extends ParserCore implements ParserInterface
             // desktop - обычный сайт HTML
             'mode'    => 'rss',
 
+            // максимальное количество новостей, берушихся с витрины
+            //            'itemsLimit' => 10,
+
             // настройки сайта
             'site'    => [
                 // протокол и домен
@@ -46,7 +48,7 @@ class CORE_Parser extends ParserCore implements ParserInterface
 
                 // использовать юзер-агенты в http запросах.
                 // (опционально)
-                //                'user_agent'  => 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/42.0',
+                'user_agent'  => 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/42.0',
                 //                'user_agent'  => 'bot',
 
                 // часовой пояс UTC.
@@ -54,7 +56,7 @@ class CORE_Parser extends ParserCore implements ParserInterface
                 // узнать UTC и прописать его в формате +XX00
                 // Например, Москва: '+0300', Владивосток: '+1000'
                 // (опционально)
-                //                'time_zone'   => '+0300',
+                'time_zone'   => '+0300',
 
                 // формат даты для HTML витрины и карточки
                 // (см. https://www.php.net/manual/ru/datetime.format.php)
@@ -81,13 +83,13 @@ class CORE_Parser extends ParserCore implements ParserInterface
                 // (обязательный)
                 'element'             => 'rss > channel > item',
 
-                // css селектор для ссылки (относительно элемента)
-                // (обязательный)
-                'element-link'        => 'link',
-
                 // css селектор для названия элемента (относительно элемента)
                 // (обязательный)
                 'element-title'       => 'title',
+
+                // css селектор для ссылки (относительно элемента)
+                // (обязательный)
+                'element-link'        => 'link',
 
                 // css селектор для описания элемента (относительно элемента)
                 // (заполняется только, если отсутствует в карточке)
@@ -150,13 +152,13 @@ class CORE_Parser extends ParserCore implements ParserInterface
                 // (обязательный)
                 'element-text'        => '',
 
-                // css селектор для описания элемента (относительно элемента)
-                // (заполняется только, если отсутствует в витрине)
-                'element-description' => '',
-
                 // css-селектор для получения даты создания новости
                 // (заполняется только, если отсутствует в витрине)
                 'element-date'        => '',
+
+                // css селектор для описания элемента (относительно элемента)
+                // (заполняется только, если отсутствует в витрине)
+                'element-description' => '',
 
                 // css селектор для получения картинки
                 // !должен содержать конечный аттрибут src! (например: img.main-image[src])
