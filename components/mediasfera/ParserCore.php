@@ -704,8 +704,8 @@ class ParserCore
                                 break;
 
                             case 'text':
-                                // вырезаем текст меньше 5 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
-                                if (strlen($data['text']) <= 5 && !preg_match('/[^\s.,\?\!]+/', $data['text']))
+                                // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
+                                if (strlen($data['text']) <= 4 && !preg_match('/[^\s.,\?\!]+/', $data['text']))
                                 {
                                     break;
                                 }
@@ -761,6 +761,18 @@ class ParserCore
         return $posts;
     }
 
+
+    /**
+     *
+     * Обрезаем $string до последнего из след. символов: \s.,?!
+     * результат должен быть меньше $max символов
+     *
+     * @param string $string
+     * @param int    $max
+     *
+     * @return string
+     */
+    // @todo нужно тестирование
     private function substrMax(string $string, int $max = 200)
     : string {
         if (empty($string))
