@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-2';
+    private const VERSION = '1.0.0-beta-3';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1163,7 +1163,7 @@ class ParserCore
      */
     protected function getItemData(string $html)
     : array {
-//        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
+        //        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
         //        echo $html;
         //        echo PHP_EOL . '------ / RAW HTML -----' . PHP_EOL;
 
