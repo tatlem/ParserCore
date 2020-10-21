@@ -1,5 +1,48 @@
 <?php
 return [
+    'https://test/news-bolvanka3' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+
+
+<div id="container">
+
+    <div id="title">card bolvan</div>
+    <div id="text">
+    
+    <p><strong>Калугу накрыло первым мокрым снегом.</strong></p>
+
+<figure><img src="/public/user_upload/files/2020/10/sf6V0VuZZgY.jpg" style="width:942px;height:530px" /><figcaption>Фото: Елена Конина / Ника ТВ</figcaption></figure>
+
+    
+    <style>
+    .style { <a href="asd">asd</a>}
+</style>
+    
+    <script>
+                          var moevideoQueue = moevideoQueue || [];
+                          moevideoQueue.push(function () {
+                              moevideo.ContentRoll({
+                                  mode:"manual",
+                                  el:"#adv",
+                                  maxRefresh: 10,
+                                  floatWidth: "380",
+                                  floatPosition:"bottom right",
+                                  floatCloseTimeout: 10,
+                                  ignorePlayers: true,
+                                  floatMode:"full"
+                              });
+                          });
+                      </script>
+
+</div>
+</div>
+</body>
+</html>
+HTML,
+
+
     'https://test/news-bolvanka2' => <<<'HTML'
 <!DOCTYPE html>
 <html>
@@ -32,7 +75,7 @@ HTML
     ,
 
 
-    'https://test/news-bolvanka' => <<<'HTML'
+    'https://test/news-bolvanka1' => <<<'HTML'
 <!DOCTYPE html>
 <html>
 <body>
@@ -136,7 +179,7 @@ HTML
 	<title>Тестоваая новость 1</title>
 	<author>fingli</author>
 	<pubDate>Thu, 15 Oct 2020 23:31:38 +0400</pubDate>
-	<link>https://test/news-bolvanka2</link>
+	<link>https://test/news-bolvanka3</link>
 	<enclosure url="/test.jpg" type="image/jpeg"></enclosure>
 	<description><![CDATA[ Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка<div style="clear:both;"></div> ]]></description>
 </item>

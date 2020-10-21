@@ -113,7 +113,9 @@ class ParserCore
     //private const TYPE_AUDIO = 'audio';
     private const TYPE_VIDEO = 'video';
     // URL который обрабатывается сейчас
-    private string $currentUrl = '';
+    private string $currentUrl;
+    // элемент который обрабатывается сейчас
+    private string $currentElement;
     // протокол и домен
     protected string $siteUrl = '';
     // режим работы парсера
@@ -142,7 +144,6 @@ class ParserCore
         'source',
         'blockquote',
         'q',
-        'script'
     ];
     // конфигурация для конкретного экземпляра
     public array $config = [
@@ -388,14 +389,16 @@ class ParserCore
 
         if ($this->mode == 'rss')
         {
-            $listPageUrl       = $this->getUrl($this->config['rss']['url']);
-            $vitrinaElSelector = $this->config['rss']['element'];
+            $listPageUrl          = $this->getUrl($this->config['rss']['url']);
+            $vitrinaElSelector    = $this->config['rss']['element'];
+            $this->currentElement = 'rss';
         }
         else
         {
-            $listPageUrl       = $this->getUrl($this->config['list']['url']);
-            $vitrinaSelector   = $this->config['list']['container'];
-            $vitrinaElSelector = $this->config['list']['element'];
+            $listPageUrl          = $this->getUrl($this->config['list']['url']);
+            $vitrinaSelector      = $this->config['list']['container'];
+            $vitrinaElSelector    = $this->config['list']['element'];
+            $this->currentElement = 'list';
         }
 
         static::showLog('-- ' . $listPageUrl);
@@ -609,6 +612,7 @@ class ParserCore
 
     protected function normalizeItemData(array $data)
     : array {
+        //        return $data;
         $dataNew = [];
 
         //        echo '--- before';
@@ -942,8 +946,9 @@ class ParserCore
      */
     protected function getCard(string $url)
     : array {
-        $item = [];
-        $html = $this->getPage($url);
+        $this->currentElement = 'element';
+        $item                 = [];
+        $html                 = $this->getPage($url);
 
         if (!empty($html))
         {
@@ -992,9 +997,20 @@ class ParserCore
                     $elImage = $this->getUrl($elImageData);
                 }
 
-                static::showLog('--- date: ' . $elDate);
-                static::showLog('--- image: ' . $elImage);
-                static::showLog('--- description: ' . $elDescription);
+                if (!empty($this->config['element']['element-date']))
+                {
+                    static::showLog('--- date: ' . $elDate);
+                }
+
+                if (!empty($this->config['element']['element-image']))
+                {
+                    static::showLog('--- image: ' . $elImage);
+                }
+
+                if (!empty($this->config['element']['element-description']))
+                {
+                    static::showLog('--- description: ' . $elDescription);
+                }
 
                 static::showLog('-- начинаем подготовку текста новости...');
 
@@ -1147,216 +1163,218 @@ class ParserCore
      */
     protected function getItemData(string $html)
     : array {
+//        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
         //        echo $html;
-        //        echo PHP_EOL . '-----------' . PHP_EOL;
+        //        echo PHP_EOL . '------ / RAW HTML -----' . PHP_EOL;
 
         $itemData = [];
 
-        if ('с использованием Crawler')
+        // crawler сам дополняет код <html> и <body>
+        $Crawler = new Crawler($html);
+
+        $elements = $Crawler->filterXPath('//body/text() | //body//*');
+
+        if (!count($elements))
         {
-            // crawler сам дополняет код <html> и <body>
-            $Crawler = new Crawler($html);
+            return [];
+        }
 
-            $elements = $Crawler->filterXPath('//body/text() | //body/*');
+        //        print_r(count($elements));
+        //        print_r($elements);
+        //        die;
 
-            if (!count($elements))
+        foreach ($elements as $element)
+        {
+            $tagName = !empty($element->nodeName) ? $element->nodeName : '#text';
+            $val     = $this->stripText($element->nodeValue);
+            $text    = $this->stripText($element->textContent);
+            $data    = [];
+
+            // @  не забыть убрать
+            //                if ($tagName != 'blockquote')
+            //                {
+            //                    continue;
+            //                }
+
+            // обработка на основе тега
+            //@todo чтобы h1 не дублировал название и текст не содержал description
+            switch ($tagName)
             {
-                return [];
-            }
-
-            foreach ($elements as $element)
-            {
-                $tagName = !empty($element->nodeName) ? $element->nodeName : '#text';
-                $val     = $this->stripText($element->nodeValue);
-                $text    = $this->stripText($element->textContent);
-                $data    = [];
-
-                // @  не забыть убрать
-                //                if ($tagName != 'blockquote')
-                //                {
-                //                    continue;
-                //                }
-
-                // обработка на основе тега
-                //@todo чтобы h1 не дублировал название и текст не содержал description
-                switch ($tagName)
-                {
-                    // просто текст
-                    case 'p':
-                    case '#text':
-                        if (!empty($val))
-                        {
-                            $data = [
-                                'type' => self::TYPE_TEXT,
-                                'text' => $val,
-                                'tag'  => $tagName,
-                            ];
-                        }
-                        break;
-
-                    // заголовки
-                    case 'h1' :
-                    case 'h2' :
-                    case 'h3' :
-                    case 'h4' :
-                    case 'h5' :
-                    case 'h6' :
+                // просто текст
+                case 'p':
+                case '#text':
+                    if (!empty($val))
+                    {
                         $data = [
-                            'type' => self::TYPE_HEADER,
-                            'text' => $text,
+                            'type' => self::TYPE_TEXT,
+                            'text' => $val,
                             'tag'  => $tagName,
                         ];
-                        break;
+                    }
+                    break;
 
-                    case 'img':
+                // заголовки
+                case 'h1' :
+                case 'h2' :
+                case 'h3' :
+                case 'h4' :
+                case 'h5' :
+                case 'h6' :
+                    $data = [
+                        'type' => self::TYPE_HEADER,
+                        'text' => $text,
+                        'tag'  => $tagName,
+                    ];
+                    break;
+
+                case 'img':
+                    $data = [
+                        'type' => self::TYPE_IMAGE,
+                        'text' => $element->getAttribute('alt'),
+                        'url'  => $this->getUrl($element->getAttribute('src')),
+                        'tag'  => $tagName,
+                    ];
+                    break;
+
+                case 'iframe':
+                case 'video':
+                    $src = '';
+
+                    if ($tagName == 'iframe')
+                    {
+                        $src = $element->getAttribute('src');
+                    }
+                    elseif ($tagName == 'video')
+                    {
+                        $source = $element->getElementsByTagName('source')->item(0);
+
+                        if ($source)
+                        {
+                            $src = $source->getAttribute('src');
+                        }
+                    }
+
+                    if (!empty($src))
+                    {
                         $data = [
-                            'type' => self::TYPE_IMAGE,
-                            'text' => $element->getAttribute('alt'),
-                            'url'  => $this->getUrl($element->getAttribute('src')),
-                            'tag'  => $tagName,
+                            'type'  => self::TYPE_VIDEO,
+                            'tag'   => $tagName,
+                            'value' => static::getYoutubeIdFromUrl($src),
                         ];
+                    }
+                    break;
+
+                case 'blockquote':
+                case 'q':
+                    $data = [
+                        'type' => self::TYPE_QUOTE,
+                        'tag'  => $tagName,
+                        'text' => $text,
+                    ];
+                    break;
+
+                case 'a':
+                    $youtubeId = '';
+                    $url       = $this->getUrl($element->getAttribute('href'));
+
+                    //                        var_dump($url);
+
+                    if (empty($url))
+                    {
                         break;
+                    }
 
-                    case 'iframe':
-                    case 'video':
-                        $src = '';
-
-                        if ($tagName == 'iframe')
+                    // берем только родные ссылки. Внешние игнорим
+                    // это внешние ссылки
+                    if (strpos($url, $this->siteUrl) === false)
+                    {
+                        // внешнюю оставляем только ссылку на ютуб
+                        if ($youtubeId = $this::getYoutubeIdFromUrl($url))
                         {
-                            $src = $element->getAttribute('src');
-                        }
-                        elseif ($tagName == 'video')
-                        {
-                            $source = $element->getElementsByTagName('source')->item(0);
-
-                            if ($source)
-                            {
-                                $src = $source->getAttribute('src');
-                            }
-                        }
-
-                        if (!empty($src))
-                        {
-                            $data = [
-                                'type'  => self::TYPE_VIDEO,
-                                'tag'   => $tagName,
-                                'value' => static::getYoutubeIdFromUrl($src),
-                            ];
-                        }
-                        break;
-
-                    case 'blockquote':
-                    case 'q':
-                        $data = [
-                            'type' => self::TYPE_QUOTE,
-                            'tag'  => $tagName,
-                            'text' => $text,
-                        ];
-                        break;
-
-                    case 'a':
-                        $youtubeId = '';
-                        $url       = $this->getUrl($element->getAttribute('href'));
-
-                        //                        var_dump($url);
-
-                        if (empty($url))
-                        {
-                            break;
-                        }
-
-                        // берем только родные ссылки. Внешние игнорим
-                        // это внешние ссылки
-                        if (strpos($url, $this->siteUrl) === false)
-                        {
-                            // внешнюю оставляем только ссылку на ютуб
-                            if ($youtubeId = $this::getYoutubeIdFromUrl($url))
-                            {
-                            }
-                            else
-                            {
-                                // но оставляем текст из ссылки, как текст
-                                if (!empty($val))
-                                {
-                                    $data = [
-                                        'type' => self::TYPE_TEXT,
-                                        'text' => $val,
-                                        'tag'  => $tagName,
-                                    ];
-                                }
-
-                                break;
-                            }
-                        }
-
-                        // для обработки смердженных типов, аля <a href="https://youtu.be/2jzecQ0W1cQ">Ссылка на ютуб</a>
-                        if (!empty($youtubeId))
-                        {
-                            $data = [
-                                'type'  => self::TYPE_VIDEO,
-                                'tag'   => $tagName,
-                                'value' => $youtubeId,
-                            ];
                         }
                         else
                         {
-                            // если в тексте ссылки содержатся allowed tags
-                            // нужно их обработать
-                            //                            var_dump($element->childNodes);
-                            if ($element->childNodes->length >= 2)
+                            // но оставляем текст из ссылки, как текст
+                            if (!empty($val))
                             {
-                                $nodeText = '';
+                                $data = [
+                                    'type' => self::TYPE_TEXT,
+                                    'text' => $val,
+                                    'tag'  => $tagName,
+                                ];
+                            }
 
-                                foreach ($element->childNodes as $node)
+                            break;
+                        }
+                    }
+
+                    // для обработки смердженных типов, аля <a href="https://youtu.be/2jzecQ0W1cQ">Ссылка на ютуб</a>
+                    if (!empty($youtubeId))
+                    {
+                        $data = [
+                            'type'  => self::TYPE_VIDEO,
+                            'tag'   => $tagName,
+                            'value' => $youtubeId,
+                        ];
+                    }
+                    else
+                    {
+                        // если в тексте ссылки содержатся allowed tags
+                        // нужно их обработать
+                        //                            var_dump($element->childNodes);
+                        if ($element->childNodes->length >= 2)
+                        {
+                            $nodeText = '';
+
+                            foreach ($element->childNodes as $node)
+                            {
+                                //                                    print_r($node);
+                                if (isset($node->nodeName))
                                 {
-                                    //                                    print_r($node);
-                                    if (isset($node->nodeName))
+                                    // берем альт картинки
+                                    if ($node->nodeName == 'img')
                                     {
-                                        // берем альт картинки
-                                        if ($node->nodeName == 'img')
-                                        {
-                                            $nodeText .= $this->getUrl($node->getAttribute('src')) . ' ';
-                                        }
-                                        elseif (in_array($node->nodeName, $this->allowedTags))
-                                        {
-                                            $nodeText .= $node->textContent . ' ';
-                                        }
-                                        elseif ($node->nodeName == '#text')
-                                        {
-                                            $nodeText .= $node->textContent . ' ';
-                                        }
+                                        $nodeText .= $this->getUrl($node->getAttribute('src')) . ' ';
+                                    }
+                                    elseif (in_array($node->nodeName, $this->allowedTags))
+                                    {
+                                        $nodeText .= $node->textContent . ' ';
+                                    }
+                                    elseif ($node->nodeName == '#text')
+                                    {
+                                        $nodeText .= $node->textContent . ' ';
                                     }
                                 }
-
-                                // делаем ссылку у которой текст = URL внутренней картинки и/или текст
-                                if (!empty($nodeText) && !empty($url))
-                                {
-                                    $data = [
-                                        'type' => self::TYPE_LINK,
-                                        'tag'  => $tagName,
-                                        'text' => $nodeText,
-                                        'url'  => $url
-                                    ];
-                                }
                             }
-                            else
+
+                            // делаем ссылку у которой текст = URL внутренней картинки и/или текст
+                            if (!empty($nodeText) && !empty($url))
                             {
-                                // сохраняем как обычную ссылку
                                 $data = [
                                     'type' => self::TYPE_LINK,
                                     'tag'  => $tagName,
-                                    'text' => $text,
+                                    'text' => $nodeText,
                                     'url'  => $url
                                 ];
                             }
                         }
-                        break;
-                }
+                        else
+                        {
+                            // сохраняем как обычную ссылку
+                            $data = [
+                                'type' => self::TYPE_LINK,
+                                'tag'  => $tagName,
+                                'text' => $text,
+                                'url'  => $url
+                            ];
+                        }
+                    }
+                    break;
+            }
 
-                if (!empty($data))
-                {
-                    $itemData[] = $data;
-                }
+            if (!empty($data))
+            {
+                $itemData[] = $data;
             }
         }
 
@@ -1767,76 +1785,107 @@ class ParserCore
 
         if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
         {
-            return $this->getEmulateHtml($url);
+            $responseHtml = $this->getEmulateHtml($url);
         }
-
-        $Curl = Helper::getCurl();
-
-        if ('настройка curl')
+        else
         {
-            if (!empty($this->config['site']['user_agent']))
+            $Curl = Helper::getCurl();
+
+            if ('настройка curl')
             {
-                if ($this->config['site']['user_agent'] === 'bot')
+                if (!empty($this->config['site']['user_agent']))
                 {
-                    $Curl->setOption(CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
-                }
-                else
-                {
-                    $Curl->setOption(CURLOPT_USERAGENT, $this->config['site']['user_agent']);
-                }
-            }
-        }
-
-        $responseHtml = $Curl->get($url);
-        $responseInfo = $Curl->getInfo();
-
-        // пост обработка
-        if (!empty($responseHtml))
-        {
-            // контент получен
-            if ($responseInfo['http_code'] >= 200 && $responseInfo['http_code'] < 300)
-            {
-                if ($this->mode == 'rss')
-                {
-                    // @todo перекодировка для кривых xml
-                }
-                else
-                {
-                    // решаем проблемы кодировки. Все должно быть переведено в utf-8
-                    $charset    = '';
-                    $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
-
-                    if (strpos($charsetRaw, 'charset=') !== false)
+                    if ($this->config['site']['user_agent'] === 'bot')
                     {
-                        $charset = str_replace("text/html; charset=", "", $charsetRaw);
+                        $Curl->setOption(CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
                     }
                     else
                     {
-                        preg_match('/charset=([-a-z0-9_]+)/i', $responseHtml, $charsetMatches);
+                        $Curl->setOption(CURLOPT_USERAGENT, $this->config['site']['user_agent']);
+                    }
+                }
+            }
 
-                        if (!empty($charsetMatches[1]))
+            $responseHtml = $Curl->get($url);
+            $responseInfo = $Curl->getInfo();
+
+            // пост обработка
+            if (!empty($responseHtml))
+            {
+                // контент получен
+                if ($responseInfo['http_code'] >= 200 && $responseInfo['http_code'] < 300)
+                {
+                    if ($this->mode == 'rss')
+                    {
+                        // @todo перекодировка для кривых xml
+                    }
+                    else
+                    {
+                        // решаем проблемы кодировки. Все должно быть переведено в utf-8
+                        $charset    = '';
+                        $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
+
+                        if (strpos($charsetRaw, 'charset=') !== false)
                         {
-                            $charset = trim($charsetMatches[1]);
+                            $charset = str_replace("text/html; charset=", "", $charsetRaw);
+                        }
+                        else
+                        {
+                            preg_match('/charset=([-a-z0-9_]+)/i', $responseHtml, $charsetMatches);
+
+                            if (!empty($charsetMatches[1]))
+                            {
+                                $charset = trim($charsetMatches[1]);
+                            }
+                        }
+
+                        $charset = strtolower($charset);
+
+                        // делаем перекодировку
+                        if (!empty($charset) && $charset !== 'utf-8')
+                        {
+                            $responseHtml = mb_convert_encoding($responseHtml, 'utf-8', $charset);
                         }
                     }
 
-                    $charset = strtolower($charset);
-
-                    // делаем перекодировку
-                    if (!empty($charset) && $charset !== 'utf-8')
-                    {
-                        $responseHtml = mb_convert_encoding($responseHtml, 'utf-8', $charset);
-                    }
+                    // @FEAUTURE проверяем что в html нет браузерного редиректа
+                    // ...
                 }
+                else
+                {
+                    // что-то пошло не так
+                    return null;
+                }
+            }
+        }
 
-                // @FEAUTURE проверяем что в html нет браузерного редиректа
-                // ...
-            }
-            else
-            {
-                // что-то пошло не так
-                return null;
-            }
+        // вырезаем теги <script> <style>, которые не вырезаются через strip_tags
+
+        if ($this->currentElement != 'rss')
+        {
+            $responseHtml = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $responseHtml);
+            $responseHtml = preg_replace('#<style(.*?)>(.*?)</style>#is', '', $responseHtml);
+
+            //            echo $responseHtml;
+            //            die;
+            //            $dom = new \DOMDocument();
+            //
+            //            $dom->loadHTML($responseHtml);
+            //
+            //            $script = $dom->getElementsByTagName('script');
+            //
+            //            $remove = [];
+            //            foreach ($script as $item)
+            //            {
+            //                $remove[] = $item;
+            //            }
+            //
+            //            foreach ($remove as $item)
+            //            {
+            //                $item->parentNode->removeChild($item);
+            //            }
+            //
+            //            $responseHtml = $dom->saveHTML();
         }
 
         //        echo '$charset = ' . $charset . PHP_EOL;
