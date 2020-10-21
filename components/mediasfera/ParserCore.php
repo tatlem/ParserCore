@@ -274,7 +274,7 @@ class ParserCore
 
     public function __construct()
     {
-        if (static::EMULATE_MODE)
+        if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
         {
             static::showLog('--- Внимание! Включен режим эмуляции http запросов. Реальные запросы не делаются ---', 'warning', true, true);
         }
@@ -1634,7 +1634,7 @@ class ParserCore
             return null;
         }
 
-        if (static::EMULATE_MODE)
+        if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
         {
             return $this->getEmulateHtml($url);
         }
