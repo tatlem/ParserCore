@@ -17,13 +17,14 @@ namespace app\components\parser\news;
 use app\components\mediasfera\ParserCore;
 use app\components\parser\ParserInterface;
 
+// CORE_XXX_Parser -> необходимо заменить на актуальное название парсера (так как называется ваш файл)
 class CORE_XXX_Parser extends ParserCore implements ParserInterface
 {
     const USER_ID = 2;
     const FEED_ID = 2;
     // поддерживаемая версия ядра
-    const FOR_CORE_VERSION = '1.0.0';
-    // дебаг-режим (только для разработки)
+    const FOR_CORE_VERSION = '1.0';
+    // дебаг-режим (только для разработки) - выводит информацию о действиях парсера
     protected const DEBUG = true;
 
     public function __construct()
@@ -35,7 +36,8 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
             'mode'    => 'rss',
 
             // максимальное количество новостей, берушихся с витрины
-            //            'itemsLimit' => 100,33
+            // (опционально)
+            //            'itemsLimit' => 100
 
             // настройки сайта
             'site'    => [
