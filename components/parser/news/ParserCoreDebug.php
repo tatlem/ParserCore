@@ -32,8 +32,8 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
     public function __construct()
     {
-        // 1 - desktop
-        // 2 - rss
+        // 1 - desktop emulate
+        // 2 - rss emulate
         // 3 - CORE_ClassicalmusicnewsParsingRu_Parser
         $configType = 2;
 
