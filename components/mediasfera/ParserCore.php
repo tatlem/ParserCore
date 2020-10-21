@@ -76,13 +76,15 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-3';
+    private const VERSION = '1.0.0-beta-4';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
     // путь до папки со вспомогательными файлами
     private const WORK_DIR = __DIR__ . '/../mediasfera/';
     // лимит на кол-во элементов по умолчанию
     private const MAX_ITEMS = 100;
+    // максимальный размер дескрипшена
+    private const MAX_DESCRIPTION_LENGTH = 200;
     // лимит на кол-во элементов
     protected int $itemsLimit = self::MAX_ITEMS;
     // внутренний формат для хранений данных элементов
@@ -570,7 +572,9 @@ class ParserCore
         static::showLog(PHP_EOL . '----------------------------------');
         static::showLog('  нормализация данных (избавление от дублей, объединение одинаковых)...');
         static::showLog('----------------------------------');
+
         $itemsParsed = $this->normalizeItems($itemsParsed);
+        static::showLog('Сделано');
 
 
         static::showLog(PHP_EOL . '----------------------------------');
@@ -578,10 +582,11 @@ class ParserCore
         static::showLog('----------------------------------');
 
         $posts = $this->getAdpativeToParser1500($itemsParsed);
+        static::showLog('Сделано');
 
         static::showLog(PHP_EOL . '--------------------------------------------------------------------', 'success');
         static::showLog(' Заканчиваем работу парсера. Создано: ' . count($posts), 'success');
-        static::showLog('--------------------------------------------------------------------', 'success');
+        static::showLog('--------------------------------------------------------------------' . PHP_EOL, 'success');
 
         return $posts;
     }
@@ -742,7 +747,7 @@ class ParserCore
                     $description = $cardItem['description'];
                 }
 
-                $description = $this->substrMax($description, 40);
+                $description = $this->substrMax($description, self::MAX_DESCRIPTION_LENGTH);
 
                 // title
                 if (!empty($listItem['title']))
@@ -2101,7 +2106,7 @@ class ParserCore
             }
             elseif ($mode == 'success')
             {
-                echo "\033[32mq";
+                echo "\033[32m";
             }
 
             if (strlen($message) > $maxLen)
