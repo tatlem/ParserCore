@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta';
+    private const VERSION = '1.0.0-beta-2';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -141,7 +141,8 @@ class ParserCore
         'video',
         'source',
         'blockquote',
-        'q'
+        'q',
+        'script'
     ];
     // конфигурация для конкретного экземпляра
     public array $config = [
@@ -564,6 +565,12 @@ class ParserCore
         }
 
         static::showLog(PHP_EOL . '----------------------------------');
+        static::showLog('  нормализация данных (избавление от дублей, объединение одинаковых)...');
+        static::showLog('----------------------------------');
+        $itemsParsed = $this->normalizeItems($itemsParsed);
+
+
+        static::showLog(PHP_EOL . '----------------------------------');
         static::showLog('  начинаем перевод данных в формат клиента...');
         static::showLog('----------------------------------');
 
@@ -574,6 +581,108 @@ class ParserCore
         static::showLog('--------------------------------------------------------------------', 'success');
 
         return $posts;
+    }
+
+    protected function normalizeItems(array $items)
+    : array {
+        $itemsNorm = [];
+
+        if ($items)
+        {
+            foreach ($items as $url => $item)
+            {
+                if (!empty($item['data']))
+                {
+                    $item['data'] = $this->normalizeItemData($item['data']);
+                }
+
+                $itemsNorm[$url] = $item;
+            }
+
+            $items = $itemsNorm;
+        }
+        //        print_r($items);
+        //        die;
+
+        return $items;
+    }
+
+    protected function normalizeItemData(array $data)
+    : array {
+        $dataNew = [];
+
+        //        echo '--- before';
+        //        print_r($data);
+        if (!empty($data))
+        {
+            $acumulator = [];
+
+            for ($i = 0; $i < count($data); $i++)
+            {
+                $cur      = $data[$i];
+                $curType  = $cur['type'];
+                $next     = isset($data[$i + 1]) ? $data[$i + 1] : null;
+                $nextType = null;
+
+                if ($next)
+                {
+                    $nextType = $next['type'];
+                }
+
+                // если следующий тип такой же, то акумулируем
+                // только для текста
+                if ($nextType !== null && $curType === $nextType && $curType === 'text')
+                {
+                    $acumulator[] = $cur;
+
+                    //                    echo 'add to $acumulator: ';
+                    //                    print_r($acumulator);
+                }
+                // иначе сразу пишем
+                else
+                {
+                    // если есть акумулятор, то его записываем
+                    if (!empty($acumulator))
+                    {
+                        // мержим текст в один
+                        $acumMerged = [
+                            'type' => 'text',
+                            'text' => '',
+                            'tag'  => '#text'
+                        ];
+
+                        foreach ($acumulator as $acumData)
+                        {
+                            $acumMerged['text'] .= ' ' . $acumData['text'];
+                        }
+
+                        $acumMerged['text'] .= ' ' . $cur['text'];
+
+                        $dataNew[] = $acumMerged;
+
+                        // очищяем акумулятор
+                        $acumulator = [];
+                        //                        $dataNew += $acumulator;
+                    }
+                    // если нет, то просто элемент
+                    else
+                    {
+                        $dataNew[] = $cur;
+                    }
+                }
+                //                echo $cur['text'];
+            }
+
+            if (!empty($dataNew))
+            {
+                $data = $dataNew;
+            }
+        }
+        //        echo '--- after ';
+        //        print_r($dataNew);
+        //        die;
+
+        return $data;
     }
 
     /**
@@ -1166,6 +1275,16 @@ class ParserCore
                             }
                             else
                             {
+                                // но оставляем текст из ссылки, как текст
+                                if (!empty($val))
+                                {
+                                    $data = [
+                                        'type' => self::TYPE_TEXT,
+                                        'text' => $val,
+                                        'tag'  => $tagName,
+                                    ];
+                                }
+
                                 break;
                             }
                         }
@@ -1921,6 +2040,10 @@ class ParserCore
                 {
                     return;
                 }
+            }
+            elseif ($mode == 'talkative')
+            {
+                return;
             }
 
             if ($mode == 'warning')

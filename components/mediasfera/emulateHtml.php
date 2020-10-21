@@ -1,5 +1,37 @@
 <?php
 return [
+    'https://test/news-bolvanka2' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+
+
+<div id="container">
+
+    <div id="title">card bolvan</div>
+    
+    <div id="text">
+    
+    <!-- избавление от дублей text -->
+    <h1>Заголовок 1</h1>
+    Раз <a href="https://ya.ru">два</a> три
+    <p>четыре</p>
+    <h2>Заголовок 2</h2>
+    пять <a href="https://ya.ru">ya.ru</a> <a href="/asd">шесть</a> семь воесмь
+    
+    <iframe>Какой-то текст в айфрейме</iframe>
+    
+    <script>Забыл вырезать скрипт</script>
+    
+    </div>
+</div>
+</body>
+</html>
+
+HTML
+    ,
+
+
     'https://test/news-bolvanka' => <<<'HTML'
 <!DOCTYPE html>
 <html>
@@ -104,7 +136,7 @@ HTML
 	<title>Тестоваая новость 1</title>
 	<author>fingli</author>
 	<pubDate>Thu, 15 Oct 2020 23:31:38 +0400</pubDate>
-	<link>https://test/news-bolvanka</link>
+	<link>https://test/news-bolvanka2</link>
 	<enclosure url="/test.jpg" type="image/jpeg"></enclosure>
 	<description><![CDATA[ Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка<div style="clear:both;"></div> ]]></description>
 </item>
