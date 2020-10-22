@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-9';
+    private const VERSION = '1.0.0-beta-10';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -121,7 +121,7 @@ class ParserCore
     // URL который обрабатывается сейчас
     private string $currentUrl;
     // элемент который обрабатывается сейчас
-    private string $currentElement;
+    private string $currentElement = 'none';
     // протокол и домен
     protected string $siteUrl = '';
     // режим работы парсера
@@ -1436,12 +1436,17 @@ class ParserCore
     function getDate(string $date
     )
     : ?string {
+        if (empty($date))
+        {
+            return '';
+        }
+
         $timeZone = new DateTimeZone($this->timeZone);
 
         $date = strip_tags($date);
 
         // вырезаем лишние символы
-        if ($this->mode != 'rss')
+        if ($this->currentElement != 'rss')
         {
             $date = preg_replace('~[/\\\\-]~', '.', $date);
             $date = str_replace(',', '', $date);
@@ -1473,7 +1478,7 @@ class ParserCore
             }
         }
 
-        return null;
+        return '';
     }
 
     /**
@@ -1488,7 +1493,7 @@ class ParserCore
     function getDateFromDate(string $date, DateTimeZone $timeZone
     )
     : ?DateTimeImmutable {
-        if ($this->mode === 'rss')
+        if ($this->currentElement === 'rss')
         {
             $dateTime = DateTimeImmutable::createFromFormat($this->dateFormatRss, $date, $timeZone);
         }
@@ -1583,6 +1588,9 @@ class ParserCore
             }
         }
 
+        //        echo $date;
+
+
         // сложная дата
         preg_match('/\d{2}:\d{2}/', $date, $matches);
         preg_match('/\d+\s\D{3,}\s\d{4}/', $date, $matches2);
@@ -1597,6 +1605,39 @@ class ParserCore
             $dayAndMonthStr = trim($matches3[0]);
         }
 
+        // если есть три точки, то это полная дата
+        if (substr_count($date, '.') == 2)
+        {
+            preg_match('/\d{2}\.\d{2}\.(\d{2,4})/', $date, $fullDateMatches);
+
+            $fullDateStr     = $fullDateMatches[0] ?? '';
+            $fullDateYearStr = $fullDateMatches[1] ?? '';
+
+
+            $fullDateFormatDate = 'd.m.Y';
+
+            if ($fullDateStr)
+            {
+                if (strlen($fullDateYearStr) == 2)
+                {
+                    $fullDateFormatDate = 'd.m.y';
+                }
+
+                if ($timeStr)
+                {
+                    return DateTimeImmutable::createFromFormat($fullDateFormatDate . ' H:i', $fullDateStr . ' ' . $timeStr, $timeZone);
+                }
+                else
+                {
+                    return DateTimeImmutable::createFromFormat($fullDateFormatDate, $fullDateStr, $timeZone);
+                }
+            }
+            //            echo 'есть полная дата!';
+        }
+
+        //        echo '$timeStr = ' . $timeStr . PHP_EOL;
+        //        echo '$dateStr = ' . $dateStr . PHP_EOL;
+        //        echo '$dayAndMonthStr = ' . $dayAndMonthStr . PHP_EOL;
 
         if (!empty($dateStr) || !empty($dayAndMonthStr))
         {
@@ -2280,6 +2321,7 @@ class ParserCore
             //            '2020.01.01',
         ];
         $valuesText = [
+            '22.10.20 18:43 <a href="tag.aspx?id=173" class="link">монеты</a>',
             'сегодня',
             'сегодня в 2 часа',
             'Сегодня, 16:36',
@@ -2307,7 +2349,8 @@ class ParserCore
 
         foreach ($values as $value)
         {
-            static::showLog($value . "\t" . '  => ' . $this->getDate($value));
+            static::showLog($value . "\t" . '  => ', 'default', false);
+            static::showLog($this->getDate($value), 'warning');
         }
     }
 }
