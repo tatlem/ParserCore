@@ -1,5 +1,47 @@
 <?php
 return [
+    'https://test/incorrect1.xml' => <<<'HTML'
+
+
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
+<channel>
+<title>Новости</title>
+<link>https://in-news.ru</link>
+<description></description>
+<lastBuildDate>Thu, 22 Oct 2020 17:32:57 +0500</lastBuildDate>
+<ttl>60</ttl>
+<yandex:logo>https://in-news.ru/bitrix/templates/innews_main/images/yandex_normal_logo.png</yandex:logo>
+<yandex:logo type="square">https://in-news.ru/bitrix/templates/innews_main/images/yandex_square_logo.png</yandex:logo>
+
+
+<item>
+	<title>ЭКСКЛЮЗИВ. С 23 октября в Сургуте откроются круглосуточные кабинеты для КТ-исследований</title>
+	<link>https://in-news.ru/news/zdorovie/eksklyuziv-s-23-sentyabrya-v-surgute-otkroyutsya-kruglosutochnye-kabinety-dlya-kt-issledovaniy.html</link>
+	<description>Обследование там смогут пройти горожане с подтвержденным коронавирусом и тех, у кого есть симптомы болезни</description>
+	
+		
+		<enclosure url="https://in-news.ru/upload/iblock/17d/17dee63eb1b03bf25aa52eda47548d9c.jpg" length="36976" type="image/jpeg"/>
+				<category>Здоровье</category>
+				<yandex:full-text>&lt;p&gt;
+	 С 23 октября в Сургуте заработают круглосуточные кабинеты неотложной помощи для больных коронавирусом, и тех, у кого есть симптомы новой инфекции. Там же в случае необходимости можно будет выполнить КТ-исследование легких. На работу 24 на 7 перейдут кабинеты в поликлиниках номер один, два и четыре. Об этом телеканалу «Сургут 24» сообщил главный врач первой ГП&lt;b&gt; Максим Слепов.&lt;/b&gt;&lt;b&gt; «Это будет сделано для того, чтобы разгрузить приемное отделение Сургутской окружной клинической больницы»&lt;/b&gt;, - отметил он. Говоря о причинах такого решения руководитель окружного департамента здравоохранения &lt;b&gt;Алексей Добровольский&lt;/b&gt; отметил повышение эффективности и скорости постановки диагнозов. В случае необходимости госпитализировать пациентов с ковид-19 тоже будут быстрее, потому как весь комплекс исследований для этого уже будет выполнен.
+&lt;/p&gt;
+&lt;p&gt;
+	&lt;b&gt;«Мы сегодня видим не очень большую нагрузку на эти компьютерные томографы в поликлиниках. 30, 25, 40 исследований – это полторы, даже не две смены работы КТ. Но с учетом того, что это неравномерно, это невозможно распланировать от минуты к минуте, от часа к часу, поэтому нам эффективнее перевести их в режим работы 24/7. Неделя, две, три, четыре, я думаю, и вернемся к тому моменту, когда сможем это решение откатить», &lt;/b&gt;– рассказал директор департамента здравоохранения Алексей Добровольский.
+&lt;/p&gt;</yandex:full-text>
+		<pubDate>Thu, 22 Oct 2020 16:40:00 +0500</pubDate>
+</item>
+
+
+</channel>
+</rss>
+
+
+
+HTML,
+
+
+
+
     'https://test/news-bolvanka3' => <<<'HTML'
 <!DOCTYPE html>
 <html>

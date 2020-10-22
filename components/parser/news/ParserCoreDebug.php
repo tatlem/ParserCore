@@ -160,7 +160,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'site'       => [
                     // протокол и домен
                     // (обязательный)
-                    'url'         => 'https://test/',
+                    'url'         => 'https://test',
 
                     // использовать юзер-агенты в http запросах.
                     // можно передать значение: bot
@@ -187,7 +187,9 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'rss'        => [
                     // относительный URL где находится RSS
                     // (обязательный)
-                    'url'                 => '/rss.xml',
+                    //                                        'url'                 => '/rss.xml',
+                    'url'                 => '/incorrect1.xml',
+                    //                    'url'                 => '/gems/backend/rssTwoExample2.xml',
 
                     // css селектор для элемента витрины (желательно от корня)
                     // (обязательный)
@@ -199,15 +201,15 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css селектор для названия элемента (относительно элемента)
                     // (обязательный)
-                    'element-title'       => 'title',
+                    'element-title'       => 'description',
 
                     // css селектор для описания элемента (относительно элемента)
                     // (заполняется только, если отсутствует в карточке)
-                    'element-description' => 'description',
+                    'element-description' => '',
 
                     // css селектор для картинки элемента (относительно элемента)
                     // (заполняется только, если отсутствует в карточке)
-                    'element-image'       => 'enclosure[url]',
+                    'element-image'       => '',
 
                     // css селектор для даты элемента (относительно элемента)
                     // (заполняется только, если отсутствует в карточке)

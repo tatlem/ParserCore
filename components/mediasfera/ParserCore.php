@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-7';
+    private const VERSION = '1.0.0-beta-8';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1722,7 +1722,7 @@ class ParserCore
     : array {
         $this->showLog('getElementsDataFromRss($html, "' . $elementSelector . '", "' . $get . '", "' . $limit . '", Crawler "' . (bool)$Crawler . '" ):', 'talkative');
 
-        if (static::DEBUG == 2)
+        if (static::DEBUG === 2)
         {
             echo "------ RAW XML  -----\033[44m" . PHP_EOL;
             echo $xml;
@@ -1731,10 +1731,23 @@ class ParserCore
 
         $data = [];
 
-        if (empty($Crawler))
+        if ($this->currentElement == 'rss')
         {
-            $Crawler = new Crawler($xml);
+            if (empty($Crawler))
+            {
+                $Crawler = new Crawler();
+            }
+
+            $Crawler->addXmlContent($xml);
         }
+        else
+        {
+            if (empty($Crawler))
+            {
+                $Crawler = new Crawler($xml);
+            }
+        }
+
 
         // CssSelectorConverter(true) - по умолчанию camelCase теги не сохраняются (все переводится в lower case)
         $Converter       = new CssSelectorConverter(false);
@@ -1786,9 +1799,7 @@ class ParserCore
      *
      * @return string|null
      */
-    // @todo тестирование
-    protected
-    function getAttrFromSelector(string $elementSelector
+    protected function getAttrFromSelector(string $elementSelector
     )
     : ?string {
         $attribute = '';
@@ -1846,14 +1857,21 @@ class ParserCore
         $this->currentUrl     = $url;
         $this->currentCharset = 'utf-8'; // по умолчанию
 
+
         if (empty($url))
         {
             return null;
         }
 
+        // включен эмулятор
         if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
         {
             $responseHtml = $this->getEmulateHtml($url);
+
+            if ($this->currentElement == 'rss')
+            {
+                $responseHtml = $this->getCorrectedXml($responseHtml);
+            }
         }
         else
         {
@@ -1886,7 +1904,7 @@ class ParserCore
                 {
                     if ($this->currentElement == 'rss')
                     {
-                        // @todo перекодировка для кривых xml
+                        $responseHtml = $this->getCorrectedXml($responseHtml);
                     }
                     else
                     {
@@ -1940,6 +1958,37 @@ class ParserCore
             $responseHtml = preg_replace('#<style(.*?)>(.*?)</style>#is', '', $responseHtml);
         }
 
+
+        return $responseHtml;
+    }
+
+    // корректировка для кривых xml
+    protected function getCorrectedXml($responseHtml)
+    {
+        // ставим первым <?xml version="1.0"...
+        $responseHtmlWithoutXML = preg_replace('/\A\s*<\?xml\s.*\?>/', '', $responseHtml);
+        $responseHtml           = '<?xml version="1.0"?>' . $responseHtmlWithoutXML;
+
+        // убираем всякую чушь из тега rss
+        // <rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
+        $responseHtml = preg_replace('/<rss[\s]?.*>/', '<rss version="2.0">', $responseHtml);
+
+
+        if (static::DEBUG >= 1 && 'проверка RSS на корректность')
+        {
+            libxml_use_internal_errors(true);
+            try
+            {
+                $xml = new \SimpleXmlElement($responseHtml);
+            } catch (Exception $e)
+            {
+                //nothing
+            }
+
+            libxml_clear_errors();
+
+            static::showLog('==== RSS в порядке ====', 'default');
+        }
 
         return $responseHtml;
     }
@@ -2116,7 +2165,7 @@ class ParserCore
     // https://habr.com/ru/post/119436/
     // https://en.wikipedia.org/wiki/ANSI_escape_code#/media/File:ANSI_sample_program_output.png
     private
-    function showLog(string $message, string $mode = 'default', $break = true, bool $showOnce = false
+    function showLog(string $message, string $mode = 'default', $break = true
     ) {
         if (static::DEBUG !== false)
         {
