@@ -1966,13 +1966,14 @@ class ParserCore
     protected function getCorrectedXml($responseHtml)
     {
         // ставим первым <?xml version="1.0"...
-        $responseHtmlWithoutXML = preg_replace('/\A\s*<\?xml\s.*\?>/', '', $responseHtml);
-        $responseHtml           = '<?xml version="1.0"?>' . $responseHtmlWithoutXML;
+        $responseHtml = preg_replace('/\s*<\?xml\s.*\?>/', '<?xml version="1.0"?>', $responseHtml);
 
         // убираем всякую чушь из тега rss
         // <rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
-        $responseHtml = preg_replace('/<rss[\s]?.*>/', '<rss version="2.0">', $responseHtml);
+        $responseHtml = preg_replace('/<rss[\s]?[^>]*>/', '<rss version="2.0">', $responseHtml);
 
+//        echo $responseHtml;
+        //        die;
 
         if (static::DEBUG >= 1 && 'проверка RSS на корректность')
         {
