@@ -76,9 +76,9 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-6';
+    private const VERSION = '1.0.0-beta-7';
     // доступные режимы работы парсера
-    private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
+    private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
     private const WORK_DIR = __DIR__ . '/../mediasfera/';
     // лимит на кол-во элементов по умолчанию
@@ -630,6 +630,7 @@ class ParserCore
 
         //        echo '--- before';
         //        print_r($data);
+
         if (!empty($data))
         {
             $acumulator = [];
@@ -695,6 +696,7 @@ class ParserCore
                 $data = $dataNew;
             }
         }
+
         //        echo '--- after ';
         //        print_r($dataNew);
         //        die;
@@ -1205,16 +1207,23 @@ class ParserCore
      */
     protected function getItemData(string $html)
     : array {
-        //        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
-        //        echo $html;
-        //        echo PHP_EOL . '------ / RAW HTML -----' . PHP_EOL;
+        if (static::DEBUG == 2)
+        {
+            echo "------ RAW HTML getItemData() -----\033[44m" . PHP_EOL;
+            echo $html;
+            echo PHP_EOL . "\033[0m------ / RAW HTML-----" . PHP_EOL;
+        }
+
 
         $itemData = [];
 
         // crawler сам дополняет код <html> и <body>
-        $Crawler = new Crawler($html);
+        //        $Crawler = new Crawler($html);
+        $Crawler = new Crawler('<fingli>' . $html . '</fingli>');
 
-        $elements = $Crawler->filterXPath('//body/text() | //body//*');
+        //        $elements = $Crawler->filterXPath('//body/text() | //body//*');
+        //        $elements = $Crawler->filterXPath('//body//text() | //body//*');
+        $elements = $Crawler->filterXPath('//body//node()');
 
         if (!count($elements))
         {
@@ -1423,7 +1432,9 @@ class ParserCore
         return $itemData;
     }
 
-    protected static function getYoutubeIdFromUrl(string $url)
+    protected
+    static function getYoutubeIdFromUrl(string $url
+    )
     : ?string {
         $pattern = '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})%i';
 
@@ -1435,7 +1446,9 @@ class ParserCore
         return '';
     }
 
-    protected function stripText(string $text)
+    protected
+    function stripText(string $text
+    )
     : string {
         return trim($text);
     }
@@ -1448,7 +1461,9 @@ class ParserCore
      * @return string|null
      * @throws \Exception
      */
-    protected function getDate(string $date)
+    protected
+    function getDate(string $date
+    )
     : ?string {
         $timeZone = new DateTimeZone($this->timeZone);
 
@@ -1498,7 +1513,9 @@ class ParserCore
      * @return string || null
      *
      */
-    protected function getDateFromDate(string $date, DateTimeZone $timeZone)
+    protected
+    function getDateFromDate(string $date, DateTimeZone $timeZone
+    )
     : ?DateTimeImmutable {
         if ($this->mode === 'rss')
         {
@@ -1547,7 +1564,9 @@ class ParserCore
      * а также, типа: 15 октября 2020
      *
      */
-    protected function getDateFromText(string $date, DateTimeZone $timeZone)
+    protected
+    function getDateFromText(string $date, DateTimeZone $timeZone
+    )
     : ?DateTimeImmutable {
         $date = mb_strtolower(trim($date));
         $now  = new DateTimeImmutable('now', $timeZone);
@@ -1644,7 +1663,9 @@ class ParserCore
         return $this->TimeParser->parse($date);
     }
 
-    private function getDateWithNumMonth(string $date)
+    private
+    function getDateWithNumMonth(string $date
+    )
     : ?string {
         $replaceMonth = [
             'января'   => '01',
@@ -1684,7 +1705,9 @@ class ParserCore
     }
 
     // геттер элементов HTML
-    protected function getElementsDataFromHtml(string $html, string $containerSelector, string $elementSelector, string $get = 'html')
+    protected
+    function getElementsDataFromHtml(string $html, string $containerSelector, string $elementSelector, string $get = 'html'
+    )
     : array {
         $this->showLog('getElementsDataFromHtml($html, "' . $containerSelector . '", "' . $elementSelector . '" ):', 'talkative');
 
@@ -1744,7 +1767,9 @@ class ParserCore
     }
 
     // геттер элементов RSS
-    protected function getElementsDataFromRss(string $xml, string $elementSelector, string $get = 'html', int $limit = -1, Crawler $Crawler = null)
+    protected
+    function getElementsDataFromRss(string $xml, string $elementSelector, string $get = 'html', int $limit = -1, Crawler $Crawler = null
+    )
     : array {
         $data = [];
 
@@ -1804,7 +1829,9 @@ class ParserCore
      * @return string|null
      */
     // @todo тестирование
-    protected function getAttrFromSelector(string $elementSelector)
+    protected
+    function getAttrFromSelector(string $elementSelector
+    )
     : ?string {
         $attribute = '';
 
@@ -1820,7 +1847,8 @@ class ParserCore
         return $attribute;
     }
 
-    public function testGetAttrFromSelector()
+    public
+    function testGetAttrFromSelector()
     : void
     {
         $selectors = [
@@ -1839,7 +1867,9 @@ class ParserCore
 
     // возвращаем абсолютную ссылку
     // @todo потестить
-    private function getUrl(?string $url)
+    private
+    function getUrl(?string $url
+    )
     : ?string {
         // корректируем, если в ссылке содержатся русские буквы
         //        if (preg_match('/[\p{Cyrillic}]+/u', $url))
@@ -1863,7 +1893,9 @@ class ParserCore
      *
      * @return string || null
      */
-    protected function getPage(string $url)
+    protected
+    function getPage(string $url
+    )
     : ?string {
         $this->currentUrl     = $url;
         $this->currentCharset = 'utf-8'; // по умолчанию
@@ -1992,41 +2024,47 @@ class ParserCore
     }
 
     // установка формата времени для HTML
-    private function getDateFormat()
+    private
+    function getDateFormat()
     : string
     {
         return $this->config['site']['date_format'] ?? 'd.m.Y H:i';
     }
 
-    private function getTimeParser()
+    private
+    function getTimeParser()
     {
         // @author https://github.com/Metallizzer/TimeParser
         return new TimeParser('russian');
     }
 
     // установка формата времени для RSS
-    private function getDateFormatRss()
+    private
+    function getDateFormatRss()
     : string
     {
         return $this->config['site']['date_format_rss'] ?? 'D, d M Y H:i:s O';
     }
 
     // установка временной зоны
-    private function getTimeZone()
+    private
+    function getTimeZone()
     : string
     {
         return $this->config['site']['time_zone'] ?? '+0300';
     }
 
     // установка лимита элементов
-    private function getItemsLimit()
+    private
+    function getItemsLimit()
     : int
     {
         return $this->config['itemsLimit'] ?? self::MAX_ITEMS;
     }
 
     // установка URL сайта
-    private function getSiteUrl()
+    private
+    function getSiteUrl()
     : string
     {
         $url = parse_url($this->config['site']['url']);
@@ -2057,7 +2095,8 @@ class ParserCore
     }
 
     // установка режима парсера
-    private function getMode()
+    private
+    function getMode()
     : string
     {
         $mode = $this->config['mode'] ?? '';
@@ -2070,8 +2109,9 @@ class ParserCore
         return 'desktop';
     }
 
-    private static function getVersionArray(string $version)
-    {
+    private
+    static function getVersionArray(string $version
+    ) {
         $vParts = explode('.', $version);
 
         if (!isset($vParts[0]))
@@ -2092,8 +2132,9 @@ class ParserCore
         return $vParts;
     }
 
-    private function keysIsNotEmptyInAnotherArray(array $arrayOfRequiredKeys, array $arrayTarget, $path = null)
-    {
+    private
+    function keysIsNotEmptyInAnotherArray(array $arrayOfRequiredKeys, array $arrayTarget, $path = null
+    ) {
         foreach ($arrayOfRequiredKeys as $k => $v)
         {
             if (!is_array($v))
@@ -2131,8 +2172,9 @@ class ParserCore
      * @return mixed|null
      *
      */
-    private function getValFromKeyChain($arrayTarget, $keyChain)
-    {
+    private
+    function getValFromKeyChain($arrayTarget, $keyChain
+    ) {
         $level = $arrayTarget;
         for ($i = 0; $i < count($keyChain); $i++)
         {
@@ -2150,8 +2192,11 @@ class ParserCore
     }
 
     // вывод инфы в лог (когда включен режим DEBUG)
-    private function showLog(string $message, string $mode = 'default', $break = true, bool $showOnce = false)
-    {
+    // https://habr.com/ru/post/119436/
+    // https://en.wikipedia.org/wiki/ANSI_escape_code#/media/File:ANSI_sample_program_output.png
+    private
+    function showLog(string $message, string $mode = 'default', $break = true, bool $showOnce = false
+    ) {
         // не получилось сделать так, чтобы showLog вызывался бы один раз из __construct
         //        $messageID = date('U');
         //
@@ -2241,7 +2286,9 @@ class ParserCore
     }
 
     // для эмуляции http-запросов к URL
-    public function getEmulateHtml(string $url)
+    public
+    function getEmulateHtml(string $url
+    )
     : ?string {
         $emulateData  = [];
         $fileWithData = self::WORK_DIR . 'emulateHtml.php';
@@ -2259,7 +2306,8 @@ class ParserCore
      * -------- ТЕСТЫ ----------
      *
      */
-    public function testGetDate()
+    public
+    function testGetDate()
     {
         static::showLog('--- format= ' . $this->dateFormat . ' | zone= ' . $this->timeZone . ' ---');
         $valuesDate = [

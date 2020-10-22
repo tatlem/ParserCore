@@ -25,7 +25,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
     protected const EMULATE_MODE = true;
     // включить дебаг-режим (только для разработки)
-    protected const DEBUG = true;
+    protected const DEBUG = 1;
     // дебаг-режим  (только для разработки) [core, default]
     //    protected const DEBUG_MODE = 'talkative';
     protected const DEBUG_MODE = 'default';
