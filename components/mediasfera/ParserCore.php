@@ -76,13 +76,13 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-8';
+    private const VERSION = '1.0.0-beta-9';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
     private const WORK_DIR = __DIR__ . '/../mediasfera/';
     // лимит на кол-во элементов по умолчанию
-    private const MAX_ITEMS = 100;
+    private const MAX_ITEMS = 20;
     // максимальный размер дескрипшена
     private const MAX_DESCRIPTION_LENGTH = 200;
     // лимит на кол-во элементов
@@ -797,51 +797,63 @@ class ParserCore
                         switch ($data['type'])
                         {
                             case 'header':
-                                $level = substr($data['tag'], 1, 1);
-
-                                if (!$level)
+                                if (!empty($data['text']))
                                 {
-                                    $level = 1;
-                                }
+                                    $level = substr($data['tag'], 1, 1);
 
-                                $Post->addItem(
-                                    new NewsPostItem(
-                                        NewsPostItem::TYPE_HEADER,
-                                        $data['text'],
-                                        null,
-                                        null,
-                                        $level,
-                                        null
-                                    ));
+                                    if (!$level)
+                                    {
+                                        $level = 1;
+                                    }
+
+                                    $Post->addItem(
+                                        new NewsPostItem(
+                                            NewsPostItem::TYPE_HEADER,
+                                            $data['text'],
+                                            null,
+                                            null,
+                                            $level,
+                                            null
+                                        ));
+                                }
                                 break;
 
                             case 'link':
-                                $Post->addItem(
-                                    new NewsPostItem(
-                                        NewsPostItem::TYPE_LINK,
-                                        $data['text'],
-                                        null,
-                                        $data['url'],
-                                        null,
-                                        null
-                                    ));
+                                if (!empty($data['url']))
+                                {
+                                    $Post->addItem(
+                                        new NewsPostItem(
+                                            NewsPostItem::TYPE_LINK,
+                                            $data['text'],
+                                            null,
+                                            $data['url'],
+                                            null,
+                                            null
+                                        ));
+                                }
                                 break;
 
                             case 'quote':
-                                $Post->addItem(
-                                    new NewsPostItem(
-                                        NewsPostItem::TYPE_QUOTE,
-                                        $data['text'],
-                                        null,
-                                        null,
-                                        null,
-                                        null
-                                    ));
+                                if (!empty($data['text']))
+                                {
+                                    $Post->addItem(
+                                        new NewsPostItem(
+                                            NewsPostItem::TYPE_QUOTE,
+                                            $data['text'],
+                                            null,
+                                            null,
+                                            null,
+                                            null
+                                        ));
+                                }
                                 break;
 
                             case 'text':
                                 // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
-                                if (strlen($data['text']) <= 4 && !preg_match('/[^\s.,\?\!]+/', $data['text']))
+                                if (
+                                    (strlen($data['text']) <= 4 && !preg_match('/[^\s.,\?\!]+/', $data['text'])) ||
+                                    empty($data['text'])
+                                )
                                 {
                                     break;
                                 }
@@ -1177,7 +1189,7 @@ class ParserCore
      */
     protected function getItemData(string $html)
     : array {
-        if (static::DEBUG == 2)
+        if ((int)static::DEBUG >= 2)
         {
             echo "------ RAW HTML getItemData() -----\033[44m" . PHP_EOL;
             echo $html;
@@ -1722,7 +1734,7 @@ class ParserCore
     : array {
         $this->showLog('getElementsDataFromRss($html, "' . $elementSelector . '", "' . $get . '", "' . $limit . '", Crawler "' . (bool)$Crawler . '" ):', 'talkative');
 
-        if (static::DEBUG === 2)
+        if ((int)static::DEBUG >= 2)
         {
             echo "------ RAW XML  -----\033[44m" . PHP_EOL;
             echo $xml;
@@ -1972,10 +1984,10 @@ class ParserCore
         // <rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
         $responseHtml = preg_replace('/<rss[\s]?[^>]*>/', '<rss version="2.0">', $responseHtml);
 
-//        echo $responseHtml;
+        //        echo $responseHtml;
         //        die;
 
-        if (static::DEBUG >= 1 && 'проверка RSS на корректность')
+        if ((int)static::DEBUG >= 1 && 'проверка RSS на корректность')
         {
             libxml_use_internal_errors(true);
             try
@@ -2168,16 +2180,12 @@ class ParserCore
     private
     function showLog(string $message, string $mode = 'default', $break = true
     ) {
-        if (static::DEBUG !== false)
+        $debug = (int)static::DEBUG;
+        if ($debug > 0)
         {
             $maxLen    = 1000;
             $debugMode = 'default';
-            $debug     = static::DEBUG;
 
-            if ($debug === true)
-            {
-                $debug = 1;
-            }
 
             if (defined('static::DEBUG_MODE'))
             {
