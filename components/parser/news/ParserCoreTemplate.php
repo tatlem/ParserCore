@@ -38,7 +38,7 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
 
             // максимальное количество новостей, берушихся с витрины
             // (опционально)
-            //            'itemsLimit' => 100
+            //            'itemsLimit' => 10,
 
             // настройки сайта
             'site'    => [

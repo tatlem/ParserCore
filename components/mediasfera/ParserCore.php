@@ -455,6 +455,8 @@ class ParserCore
                 $elTitleData = current($this->getElementsDataFromRss('', $this->config['rss']['element-title'], 'text', -1, $elementData));
                 $elLinkData  = current($this->getElementsDataFromRss('', $this->config['rss']['element-link'], 'text', -1, $elementData));
 
+                //                var_dump($elLinkData);
+
                 if (!empty($this->config['rss']['element-description']))
                 {
                     $elDescriptionData = current($this->getElementsDataFromRss('', $this->config['rss']['element-description'], 'text', -1, $elementData));
@@ -569,9 +571,6 @@ class ParserCore
             }
         }
 
-        //        print_r($itemsParsed);
-        //        die;
-
         if (empty($itemsParsed))
         {
             throw new Exception('Пустой результат $itemsParsed');
@@ -617,19 +616,13 @@ class ParserCore
 
             $items = $itemsNorm;
         }
-        //        print_r($items);
-        //        die;
 
         return $items;
     }
 
     protected function normalizeItemData(array $data)
     : array {
-        //        return $data;
         $dataNew = [];
-
-        //        echo '--- before';
-        //        print_r($data);
 
         if (!empty($data))
         {
@@ -652,9 +645,6 @@ class ParserCore
                 if ($nextType !== null && $curType === $nextType && $curType === 'text')
                 {
                     $acumulator[] = $cur;
-
-                    //                    echo 'add to $acumulator: ';
-                    //                    print_r($acumulator);
                 }
                 // иначе сразу пишем
                 else
@@ -688,7 +678,6 @@ class ParserCore
                         $dataNew[] = $cur;
                     }
                 }
-                //                echo $cur['text'];
             }
 
             if (!empty($dataNew))
@@ -696,10 +685,6 @@ class ParserCore
                 $data = $dataNew;
             }
         }
-
-        //        echo '--- after ';
-        //        print_r($dataNew);
-        //        die;
 
         return $data;
     }
@@ -731,10 +716,6 @@ class ParserCore
     protected function getAdaptiveToParser1500(array $cards)
     : array {
         $posts = [];
-
-        //        print_r($cards);
-        //        die;
-
 
         if ($this->items)
         {
@@ -958,8 +939,6 @@ class ParserCore
                 }
             }
 
-            //            print_r($matches);
-
             return substr($stringStripped, 0, $pos + 1);
         }
 
@@ -979,8 +958,6 @@ class ParserCore
         $this->currentElement = 'element';
         $item                 = [];
         $html                 = $this->getPage($url);
-
-        //        echo $html;
 
         if (!empty($html))
         {
@@ -1026,7 +1003,6 @@ class ParserCore
 
                 if (!empty($elImageData))
                 {
-                    //                    print_r($elImageData);
                     $elImage = $this->getUrl($elImageData);
                 }
 
@@ -1053,17 +1029,12 @@ class ParserCore
 
                 static::showLog('-- начинаем подготовку текста новости...');
 
-                //                print_r($elTextData);
-                //                die;
                 $elTextHtml = $this->getCardTextHtml($elTextData);
 
                 static::showLog('-- начинаем разбор текста новости во внутренний формат itemData...');
 
                 // массив для NewsPostItem
                 $elItemData = $this->getItemData($elTextHtml);
-
-                //                print_r($elItemData);
-                //                die;
 
                 return [
                     'description' => $elDescription,
@@ -1113,7 +1084,6 @@ class ParserCore
 
         if (strlen($selector) > 1)
         {
-            //            echo 'replaceNodeFromHtml($html,' . $selector . ', "blockquote")';
             $html = $this->replaceNodeFromHtml($html, $selector, 'blockquote');
         }
 
@@ -1230,10 +1200,6 @@ class ParserCore
             return [];
         }
 
-        //        print_r(count($elements));
-        //        print_r($elements);
-        //        die;
-
         foreach ($elements as $element)
         {
             $tagName = !empty($element->nodeName) ? $element->nodeName : '#text';
@@ -1241,14 +1207,8 @@ class ParserCore
             $text    = $this->stripText($element->textContent);
             $data    = [];
 
-            // @  не забыть убрать
-            //                if ($tagName != 'blockquote')
-            //                {
-            //                    continue;
-            //                }
 
             // обработка на основе тега
-            //            echo $tagName . PHP_EOL;
             switch ($tagName)
             {
                 // просто текст
@@ -1379,7 +1339,6 @@ class ParserCore
 
                             foreach ($element->childNodes as $node)
                             {
-                                //                                    print_r($node);
                                 if (isset($node->nodeName))
                                 {
                                     // берем альт картинки
@@ -1711,8 +1670,6 @@ class ParserCore
     : array {
         $this->showLog('getElementsDataFromHtml($html, "' . $containerSelector . '", "' . $elementSelector . '" ):', 'talkative');
 
-        //        echo '---' . $html . '---' . PHP_EOL;
-
         $fullSelector = trim($containerSelector . ' ' . $elementSelector);
 
         if (empty($fullSelector))
@@ -1723,7 +1680,6 @@ class ParserCore
         //        $html = '<meta http-equiv="content-type" content="text/html; charset=utf-8">'
         //        $html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"></head><body>' . $html . '</body></html>';
 
-        //        print_r($this->responseInfo);
 
         // решаем проблемы с кодировкой
         if ($this->currentCharset != 'utf-8')
@@ -1731,19 +1687,12 @@ class ParserCore
             $html = str_replace('text/html; charset=' . $this->currentCharset, 'text/html; charset=utf-8', $html);
             $html = str_replace('<meta charset="' . $this->currentCharset . '">', '<meta charset="utf-8">', $html);
         }
-        //        echo $html;
 
         $data      = [];
         $Crawler   = new Crawler($html);
         $attribute = $this->getAttrFromSelector($elementSelector);
         $elements  = $Crawler->filter($fullSelector);
 
-        //        echo '$attribute = ' . $attribute . PHP_EOL;
-        //        echo $this->currentCharset;
-        //        echo $fullSelector . PHP_EOL;
-        //        echo $html . PHP_EOL;
-        //        print_r($elements);
-        //        die;
 
         if ($elements)
         {
@@ -1771,6 +1720,15 @@ class ParserCore
     function getElementsDataFromRss(string $xml, string $elementSelector, string $get = 'html', int $limit = -1, Crawler $Crawler = null
     )
     : array {
+        $this->showLog('getElementsDataFromRss($html, "' . $elementSelector . '", "' . $get . '", "' . $limit . '", Crawler "' . (bool)$Crawler . '" ):', 'talkative');
+
+        if (static::DEBUG == 2)
+        {
+            echo "------ RAW XML  -----\033[44m" . PHP_EOL;
+            echo $xml;
+            echo PHP_EOL . "\033[0m------ / RAW XML-----" . PHP_EOL;
+        }
+
         $data = [];
 
         if (empty($Crawler))
@@ -1783,8 +1741,6 @@ class ParserCore
         $attribute       = $this->getAttrFromSelector($elementSelector);
         $elementSelector = $Converter->toXPath($elementSelector);
 
-        //        echo $elementSelector . PHP_EOL;
-
         if ($limit > 0)
         {
             $elements = $Crawler->filterXPath($elementSelector)->slice(0, $limit);
@@ -1793,6 +1749,8 @@ class ParserCore
         {
             $elements = $Crawler->filterXPath($elementSelector);
         }
+
+        //        var_dump($elements);
 
         if ($elements)
         {
@@ -1837,8 +1795,6 @@ class ParserCore
 
         preg_match('/\[([^\]=]+)\]$/', $elementSelector, $attrMatches);
 
-        //        print_r($attrMatches);
-
         if (!empty($attrMatches))
         {
             $attribute = $attrMatches[1];
@@ -1871,16 +1827,6 @@ class ParserCore
     function getUrl(?string $url
     )
     : ?string {
-        // корректируем, если в ссылке содержатся русские буквы
-        //        if (preg_match('/[\p{Cyrillic}]+/u', $url))
-        //        {
-        //            echo 'русские буквы!' . PHP_EOL;
-        //            //            die;
-        //
-        //            //            $pos = strrpos($url, '/') + 1;
-        //            //            $url = substr($url, 0, $pos) . urlencode(substr($url, $pos));
-        //        }
-
         $url = ($url) ? UriResolver::resolve($url, $this->siteUrl) : null;
 
         return $url;
@@ -1973,7 +1919,6 @@ class ParserCore
                         {
                             $responseHtml = mb_convert_encoding($responseHtml, 'utf-8', $charset);
                         }
-                        //                        echo $responseHtml;
                     }
 
                     // @FEAUTURE проверяем что в html нет браузерного редиректа
@@ -1993,32 +1938,8 @@ class ParserCore
         {
             $responseHtml = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $responseHtml);
             $responseHtml = preg_replace('#<style(.*?)>(.*?)</style>#is', '', $responseHtml);
-
-            //            echo $responseHtml;
-            //            die;
-            //            $dom = new \DOMDocument();
-            //
-            //            $dom->loadHTML($responseHtml);
-            //
-            //            $script = $dom->getElementsByTagName('script');
-            //
-            //            $remove = [];
-            //            foreach ($script as $item)
-            //            {
-            //                $remove[] = $item;
-            //            }
-            //
-            //            foreach ($remove as $item)
-            //            {
-            //                $item->parentNode->removeChild($item);
-            //            }
-            //
-            //            $responseHtml = $dom->saveHTML();
         }
 
-        //        echo '$charset = ' . $charset . PHP_EOL;
-        //        print_r($responseInfo);
-        //        echo $responseHtml;
 
         return $responseHtml;
     }
@@ -2197,27 +2118,6 @@ class ParserCore
     private
     function showLog(string $message, string $mode = 'default', $break = true, bool $showOnce = false
     ) {
-        // не получилось сделать так, чтобы showLog вызывался бы один раз из __construct
-        //        $messageID = date('U');
-        //
-        //        //        $Parent = get_parent_class($this);
-        //        var_dump(is_subclass_of($this, 'ParseCore'));
-        //
-        //        //        echo $Parent
-        //        if (isset($Parent->store))
-        //        {
-        //            // проверяем что уже показывали данное сообщение
-        //            if (isset($Parent->store['showLog'][$messageID]) && $showOnce === true)
-        //            {
-        //                return;
-        //            }
-        //
-        //            if (!isset($Parent->store['showLog'][$messageID]))
-        //            {
-        //                $Parent->store['showLog'][$messageID] = $message;
-        //            }
-        //        }
-
         if (static::DEBUG !== false)
         {
             $maxLen    = 1000;
@@ -2282,7 +2182,6 @@ class ParserCore
                 echo PHP_EOL;
             }
         }
-        //        print_r($this->store);
     }
 
     // для эмуляции http-запросов к URL
