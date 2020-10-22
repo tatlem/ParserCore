@@ -11,6 +11,32 @@ return [
     <div id="title">card bolvan</div>
     <div id="text">
     
+    
+    Текст
+    <em>Цитата 1</em>- пишет кто-то1 
+    <em>Цитата 2</em>- пишет кто-то2 
+    текст2
+    
+
+</div>
+</div>
+</body>
+</html>
+HTML,
+
+
+    'https://test/news-bolvanka2' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+
+
+<div id="container">
+
+    <div id="title">card bolvan</div>
+    
+    <div id="text">
+    
     <p><strong>Калугу накрыло первым мокрым снегом.</strong></p>
 
 <img src="/1.jpg" />
@@ -39,25 +65,6 @@ return [
                               });
                           });
                       </script>
-
-</div>
-</div>
-</body>
-</html>
-HTML,
-
-
-    'https://test/news-bolvanka2' => <<<'HTML'
-<!DOCTYPE html>
-<html>
-<body>
-
-
-<div id="container">
-
-    <div id="title">card bolvan</div>
-    
-    <div id="text">
     
     <!-- избавление от дублей text -->
     <h1>Заголовок 1</h1>

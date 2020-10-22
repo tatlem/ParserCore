@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-5';
+    private const VERSION = '1.0.0-beta-6';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -568,6 +568,9 @@ class ParserCore
             }
         }
 
+        //        print_r($itemsParsed);
+        //        die;
+
         if (empty($itemsParsed))
         {
             throw new Exception('Пустой результат $itemsParsed');
@@ -726,6 +729,9 @@ class ParserCore
     : array {
         $posts = [];
 
+        //        print_r($cards);
+        //        die;
+
 
         if ($this->items)
         {
@@ -832,6 +838,18 @@ class ParserCore
                                         $data['text'],
                                         null,
                                         $data['url'],
+                                        null,
+                                        null
+                                    ));
+                                break;
+
+                            case 'quote':
+                                $Post->addItem(
+                                    new NewsPostItem(
+                                        NewsPostItem::TYPE_QUOTE,
+                                        $data['text'],
+                                        null,
+                                        null,
                                         null,
                                         null
                                     ));
@@ -1031,12 +1049,18 @@ class ParserCore
 
 
                 static::showLog('-- начинаем подготовку текста новости...');
+
+                //                print_r($elTextData);
+                //                die;
                 $elTextHtml = $this->getCardTextHtml($elTextData);
 
                 static::showLog('-- начинаем разбор текста новости во внутренний формат itemData...');
 
                 // массив для NewsPostItem
                 $elItemData = $this->getItemData($elTextHtml);
+
+                //                print_r($elItemData);
+                //                die;
 
                 return [
                     'description' => $elDescription,
@@ -1086,6 +1110,7 @@ class ParserCore
 
         if (strlen($selector) > 1)
         {
+            //            echo 'replaceNodeFromHtml($html,' . $selector . ', "blockquote")';
             $html = $this->replaceNodeFromHtml($html, $selector, 'blockquote');
         }
 
@@ -1179,7 +1204,7 @@ class ParserCore
      */
     protected function getItemData(string $html)
     : array {
-        //                        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
+        //        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
         //        echo $html;
         //        echo PHP_EOL . '------ / RAW HTML -----' . PHP_EOL;
 
@@ -1213,7 +1238,7 @@ class ParserCore
             //                }
 
             // обработка на основе тега
-            //@todo чтобы h1 не дублировал название и текст не содержал description
+            //            echo $tagName . PHP_EOL;
             switch ($tagName)
             {
                 // просто текст

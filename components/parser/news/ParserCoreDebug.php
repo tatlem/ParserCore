@@ -238,7 +238,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css-селектор для цитаты
                     // (опционально)
-                    'element-quote'    => '.quote-custom',
+                    'element-quote'    => 'em',
 
                     // игнорируемые css-селекторы
                     // (можно через запятую)
