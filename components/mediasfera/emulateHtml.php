@@ -13,6 +13,10 @@ return [
     
     <p><strong>Калугу накрыло первым мокрым снегом.</strong></p>
 
+<img src="/1.jpg" />
+<img src="/2.jpg" data-img />
+<img src="/2.jpg" data-img="something" />
+
 <figure><img src="/public/user_upload/files/2020/10/sf6V0VuZZgY.jpg" style="width:942px;height:530px" /><figcaption>Фото: Елена Конина / Ника ТВ</figcaption></figure>
 
     

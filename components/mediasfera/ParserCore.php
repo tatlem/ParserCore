@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-4';
+    private const VERSION = '1.0.0-beta-5';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'mobile', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -87,6 +87,10 @@ class ParserCore
     private const MAX_DESCRIPTION_LENGTH = 200;
     // лимит на кол-во элементов
     protected int $itemsLimit = self::MAX_ITEMS;
+    // хранение текущей кодировки сайта
+    protected string $currentCharset;
+    // инфа о запросе
+    private $responseInfo;
     // внутренний формат для хранений данных элементов
     // $items => [
     //      URL => [...data...]
@@ -559,7 +563,7 @@ class ParserCore
         {
             foreach ($itemUrls as $itemUrl)
             {
-                static::showLog(PHP_EOL . '- запрашиваем ' . $itemUrl);
+                static::showLog(PHP_EOL . '- запрашиваем карточку ' . $itemUrl);
                 $itemsParsed[$itemUrl] = $this->getCard($itemUrl);
             }
         }
@@ -578,10 +582,10 @@ class ParserCore
 
 
         static::showLog(PHP_EOL . '----------------------------------');
-        static::showLog('  начинаем перевод данных в формат клиента...');
+        static::showLog('  перевод данных в формат клиента...');
         static::showLog('----------------------------------');
 
-        $posts = $this->getAdpativeToParser1500($itemsParsed);
+        $posts = $this->getAdaptiveToParser1500($itemsParsed);
         static::showLog('Сделано');
 
         static::showLog(PHP_EOL . '--------------------------------------------------------------------', 'success');
@@ -718,7 +722,7 @@ class ParserCore
      * NewsPostItem
      *
      */
-    protected function getAdpativeToParser1500(array $cards)
+    protected function getAdaptiveToParser1500(array $cards)
     : array {
         $posts = [];
 
@@ -775,13 +779,13 @@ class ParserCore
                 }
 
                 // image
-                if (!empty($listItem['image']))
-                {
-                    $image = $listItem['image'];
-                }
-                elseif (!empty($cardItem['image']))
+                if (!empty($cardItem['image']))
                 {
                     $image = $cardItem['image'];
+                }
+                elseif (!empty($listItem['image']))
+                {
+                    $image = $listItem['image'];
                 }
 
 
@@ -955,6 +959,8 @@ class ParserCore
         $item                 = [];
         $html                 = $this->getPage($url);
 
+        //        echo $html;
+
         if (!empty($html))
         {
             $elDescription = '';
@@ -999,6 +1005,7 @@ class ParserCore
 
                 if (!empty($elImageData))
                 {
+                    //                    print_r($elImageData);
                     $elImage = $this->getUrl($elImageData);
                 }
 
@@ -1017,13 +1024,13 @@ class ParserCore
                     static::showLog('--- description: ' . $elDescription);
                 }
 
-                static::showLog('-- начинаем подготовку текста новости...');
-
                 if (empty($elTextData))
                 {
-                    throw new Exception('Не получен element-text="' . (!empty($this->config['element']['element-text']) ? $this->config['element']['element-text'] : '') . '". Установите настройки парсера config[element][element-text]');
+                    throw new Exception('Не получен element-text="' . (!empty($this->config['element']['element-text']) ? $this->config['element']['element-text'] : '') . '"  Установите настройки парсера config[element][element-text]');
                 }
 
+
+                static::showLog('-- начинаем подготовку текста новости...');
                 $elTextHtml = $this->getCardTextHtml($elTextData);
 
                 static::showLog('-- начинаем разбор текста новости во внутренний формат itemData...');
@@ -1037,6 +1044,10 @@ class ParserCore
                     'date'        => $elDate,
                     'data'        => $elItemData,
                 ];
+            }
+            else
+            {
+                static::showLog('-- Не найдены данные из контейнера ' . $this->config['element']['container'] . '', 'warning');
             }
         }
 
@@ -1168,7 +1179,7 @@ class ParserCore
      */
     protected function getItemData(string $html)
     : array {
-        //        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
+        //                        echo PHP_EOL . '------ RAW HTML -----' . PHP_EOL;
         //        echo $html;
         //        echo PHP_EOL . '------ / RAW HTML -----' . PHP_EOL;
 
@@ -1649,6 +1660,10 @@ class ParserCore
     // геттер элементов HTML
     protected function getElementsDataFromHtml(string $html, string $containerSelector, string $elementSelector, string $get = 'html')
     : array {
+        $this->showLog('getElementsDataFromHtml($html, "' . $containerSelector . '", "' . $elementSelector . '" ):', 'talkative');
+
+        //        echo '---' . $html . '---' . PHP_EOL;
+
         $fullSelector = trim($containerSelector . ' ' . $elementSelector);
 
         if (empty($fullSelector))
@@ -1656,12 +1671,30 @@ class ParserCore
             throw new Exception('Не установлен CSS-селектор!');
         }
 
-        $this->showLog('getElementsDataFromHtml($html, "' . $containerSelector . '", "' . $elementSelector . '" ):', 'talkative');
+        //        $html = '<meta http-equiv="content-type" content="text/html; charset=utf-8">'
+        //        $html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"></head><body>' . $html . '</body></html>';
+
+        //        print_r($this->responseInfo);
+
+        // решаем проблемы с кодировкой
+        if ($this->currentCharset != 'utf-8')
+        {
+            $html = str_replace('text/html; charset=' . $this->currentCharset, 'text/html; charset=utf-8', $html);
+            $html = str_replace('<meta charset="' . $this->currentCharset . '">', '<meta charset="utf-8">', $html);
+        }
+        //        echo $html;
 
         $data      = [];
         $Crawler   = new Crawler($html);
         $attribute = $this->getAttrFromSelector($elementSelector);
         $elements  = $Crawler->filter($fullSelector);
+
+        //        echo '$attribute = ' . $attribute . PHP_EOL;
+        //        echo $this->currentCharset;
+        //        echo $fullSelector . PHP_EOL;
+        //        echo $html . PHP_EOL;
+        //        print_r($elements);
+        //        die;
 
         if ($elements)
         {
@@ -1699,6 +1732,8 @@ class ParserCore
         $attribute       = $this->getAttrFromSelector($elementSelector);
         $elementSelector = $Converter->toXPath($elementSelector);
 
+        //        echo $elementSelector . PHP_EOL;
+
         if ($limit > 0)
         {
             $elements = $Crawler->filterXPath($elementSelector)->slice(0, $limit);
@@ -1734,23 +1769,46 @@ class ParserCore
     }
 
     /**
-     * вытаскиваем атрибут из селектора (selector[attribute] => attribute)
+     *
+     * вытаскиваем только последний атрибут из селектора
+     * CSS-selector[non-attribute][attribute] => attribute
      *
      * @param string $elementSelector
      *
      * @return string|null
      */
+    // @todo тестирование
     protected function getAttrFromSelector(string $elementSelector)
     : ?string {
-        preg_match('/\[([^\]]+)\]/', $elementSelector, $attrMatches);
         $attribute = '';
 
-        if ($attrMatches)
+        preg_match('/\[([^\]=]+)\]$/', $elementSelector, $attrMatches);
+
+        //        print_r($attrMatches);
+
+        if (!empty($attrMatches))
         {
             $attribute = $attrMatches[1];
         }
 
         return $attribute;
+    }
+
+    public function testGetAttrFromSelector()
+    : void
+    {
+        $selectors = [
+            'img[target]',
+            'img[target="some"]',
+            'img[non-target][target]',
+            'img[non-target][target="some"]',
+            'img[]',
+        ];
+
+        foreach ($selectors as $selector)
+        {
+            echo $selector . ' => ' . $this->getAttrFromSelector($selector) . PHP_EOL;
+        }
     }
 
     // возвращаем абсолютную ссылку
@@ -1781,7 +1839,8 @@ class ParserCore
      */
     protected function getPage(string $url)
     : ?string {
-        $this->currentUrl = $url;
+        $this->currentUrl     = $url;
+        $this->currentCharset = 'utf-8'; // по умолчанию
 
         if (empty($url))
         {
@@ -1811,8 +1870,9 @@ class ParserCore
                 }
             }
 
-            $responseHtml = $Curl->get($url);
-            $responseInfo = $Curl->getInfo();
+            $responseHtml       = $Curl->get($url);
+            $responseInfo       = $Curl->getInfo();
+            $this->responseInfo = $responseInfo;
 
             // пост обработка
             if (!empty($responseHtml))
@@ -1820,7 +1880,7 @@ class ParserCore
                 // контент получен
                 if ($responseInfo['http_code'] >= 200 && $responseInfo['http_code'] < 300)
                 {
-                    if ($this->mode == 'rss')
+                    if ($this->currentElement == 'rss')
                     {
                         // @todo перекодировка для кривых xml
                     }
@@ -1829,6 +1889,7 @@ class ParserCore
                         // решаем проблемы кодировки. Все должно быть переведено в utf-8
                         $charset    = '';
                         $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
+
 
                         if (strpos($charsetRaw, 'charset=') !== false)
                         {
@@ -1844,13 +1905,17 @@ class ParserCore
                             }
                         }
 
-                        $charset = strtolower($charset);
+                        $charset              = strtolower($charset);
+                        $this->currentCharset = $charset;
+                        //                        var_dump($charset);
+
 
                         // делаем перекодировку
                         if (!empty($charset) && $charset !== 'utf-8')
                         {
                             $responseHtml = mb_convert_encoding($responseHtml, 'utf-8', $charset);
                         }
+                        //                        echo $responseHtml;
                     }
 
                     // @FEAUTURE проверяем что в html нет браузерного редиректа
@@ -2082,22 +2147,36 @@ class ParserCore
         //            }
         //        }
 
-
-        $maxLen = 1000;
-
-        if (static::DEBUG)
+        if (static::DEBUG !== false)
         {
-            // определен дебаг режим (шаблон не имеет данной настройки)
+            $maxLen    = 1000;
+            $debugMode = 'default';
+            $debug     = static::DEBUG;
+
+            if ($debug === true)
+            {
+                $debug = 1;
+            }
+
             if (defined('static::DEBUG_MODE'))
             {
-                if ($mode == 'talkative' && static::DEBUG_MODE !== 'talkative')
+                $debugMode = static::DEBUG_MODE;
+            }
+
+            if ($debug < 2)
+            {
+                // определен дебаг режим (шаблон не имеет данной настройки)
+                if (defined('static::DEBUG_MODE'))
+                {
+                    if ($mode == 'talkative' && $debugMode !== 'talkative')
+                    {
+                        return;
+                    }
+                }
+                elseif ($mode == 'talkative')
                 {
                     return;
                 }
-            }
-            elseif ($mode == 'talkative')
-            {
-                return;
             }
 
             if ($mode == 'warning')
@@ -2107,6 +2186,10 @@ class ParserCore
             elseif ($mode == 'success')
             {
                 echo "\033[32m";
+            }
+            elseif ($mode == 'talkative')
+            {
+                echo "\033[37m";
             }
 
             if (strlen($message) > $maxLen)
@@ -2118,11 +2201,7 @@ class ParserCore
                 echo $message;
             }
 
-            if ($mode == 'warning')
-            {
-                echo "\033[0m";
-            }
-            elseif ($mode == 'success')
+            if ($mode == 'warning' || $mode == 'success' || $mode == 'talkative')
             {
                 echo "\033[0m";
             }

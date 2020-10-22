@@ -127,7 +127,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // css селектор для получения картинки
                     // !должен содержать конечный аттрибут src! (например: img.main-image[src])
                     // (заполняется только, если отсутствует в витрине)
-                    'element-image'       => '',
+                    'element-image'       => 'img[data-img][src]',
 
                     // css-селектор для основного текста
                     // (для заполнения модели NewsPostItem)
@@ -234,7 +234,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // css селектор для получения картинки
                     // !должен содержать конечный аттрибут src! (например: img.main-image[src])
                     // (заполняется только, если отсутствует в витрине)
-                    'element-image'    => '',
+                    'element-image'    => 'img[data-img][src]',
 
                     // css-селектор для цитаты
                     // (опционально)
@@ -363,13 +363,10 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         $Parser = new self();
 
         //        $Parser->testGetDate();
+        //        $Parser->testGetAttrFromSelector();
         $items = $Parser->getItems();
         $posts = $Parser->getCards(array_keys($items));
 
-        //        echo '<pre>';
-        //        print_r($posts);
-        //        echo '</pre>';
-        //        die;
 
         return $posts;
     }
