@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-12';
+    private const VERSION = '1.0.0-beta-13-friday';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -111,6 +111,7 @@ class ParserCore
     //      ]
     // ]
     protected array $itemsData = [];
+    private int $pauseBeforeRequest;
     private const TYPE_HEADER = 'header';
     private const TYPE_TEXT   = 'text';
     private const TYPE_IMAGE  = 'image';
@@ -193,6 +194,9 @@ class ParserCore
             // формат даты в RSS
             // (указывать только если он отличается от стандартного D, d M Y H:i:s O!)
             'date_format_rss' => 'D, d M Y H:i:s O',
+
+            // пауза между запросами в секундах (включается только, если сайт начинает блокировку)
+            'pause'           => 0,
         ],
 
         // настройки витрины (режим RSS)
@@ -301,13 +305,14 @@ class ParserCore
         }
 
         // инициализация переменных
-        $this->siteUrl       = $this->getSiteUrl();
-        $this->mode          = $this->getMode();
-        $this->itemsLimit    = $this->getItemsLimit();
-        $this->timeZone      = $this->getTimeZone();
-        $this->dateFormat    = $this->getDateFormat();
-        $this->dateFormatRss = $this->getDateFormatRss();
-        $this->TimeParser    = $this->getTimeParser();
+        $this->siteUrl            = $this->getSiteUrl();
+        $this->mode               = $this->getMode();
+        $this->itemsLimit         = $this->getItemsLimit();
+        $this->timeZone           = $this->getTimeZone();
+        $this->dateFormat         = $this->getDateFormat();
+        $this->dateFormatRss      = $this->getDateFormatRss();
+        $this->TimeParser         = $this->getTimeParser();
+        $this->pauseBeforeRequest = $this->getPauseBeforeRequest();
 
         // проверка переменных
 
@@ -984,6 +989,8 @@ class ParserCore
         $item                 = [];
         $html                 = $this->getPage($url);
 
+        //        echo $html;
+
         if (!empty($html))
         {
             $elDescription = '';
@@ -1073,6 +1080,11 @@ class ParserCore
                 static::showLog('-- Не найдены данные из контейнера ' . $this->config['element']['container'] . '', 'warning');
             }
         }
+        elseif ((int)static::DEBUG >= 1)
+        {
+            static::showLog('Страница вернула пустой результат', 'warning');
+        }
+
 
         return $item;
     }
@@ -1423,6 +1435,15 @@ class ParserCore
         return $itemData;
     }
 
+
+    /**
+     * Получение YoutubeID из ссылки ютуба
+     *
+     * @param string $url
+     *
+     * @return string|null
+     */
+    // @todo потестить
     protected
     static function getYoutubeIdFromUrl(string $url
     )
@@ -1452,6 +1473,7 @@ class ParserCore
      * @return string|null
      * @throws \Exception
      */
+    // @todo потестить
     protected
     function getDate(string $date
     )
@@ -1891,23 +1913,6 @@ class ParserCore
         return $attribute;
     }
 
-    public
-    function testGetAttrFromSelector()
-    : void
-    {
-        $selectors = [
-            'img[target]',
-            'img[target="some"]',
-            'img[non-target][target]',
-            'img[non-target][target="some"]',
-            'img[]',
-        ];
-
-        foreach ($selectors as $selector)
-        {
-            echo $selector . ' => ' . $this->getAttrFromSelector($selector) . PHP_EOL;
-        }
-    }
 
     // возвращаем абсолютную ссылку
     // @todo потестить
@@ -1934,7 +1939,6 @@ class ParserCore
         $this->currentUrl     = $url;
         $this->currentCharset = 'utf-8'; // по умолчанию
 
-
         if (empty($url))
         {
             return null;
@@ -1952,6 +1956,17 @@ class ParserCore
         }
         else
         {
+            // чуть помедленнее, кони, чуть помедленнее...
+            if ($this->pauseBeforeRequest > 0)
+            {
+                if ((int)static::DEBUG >= 1)
+                {
+                    static::showLog('пауза ' . $this->pauseBeforeRequest . ' сек...');
+                }
+
+                sleep($this->pauseBeforeRequest);
+            }
+
             $Curl = Helper::getCurl();
 
             if ('настройка curl')
@@ -2084,6 +2099,24 @@ class ParserCore
     {
         // @author https://github.com/Metallizzer/TimeParser
         return new TimeParser('russian');
+    }
+
+    private function getPauseBeforeRequest()
+    : int
+    {
+        $sec = $this->config['site']['pause'] ?? 0;
+
+        if ($sec < 0)
+        {
+            $sec = 0;
+        }
+
+        if ($sec > 10)
+        {
+            $sec = 10;
+        }
+
+        return $sec;
     }
 
     // установка формата времени для RSS
@@ -2394,6 +2427,24 @@ class ParserCore
         {
             static::showLog($value . "\t" . '  => ', 'default', false);
             static::showLog($this->getDate($value), 'warning');
+        }
+    }
+
+    public
+    function testGetAttrFromSelector()
+    : void
+    {
+        $selectors = [
+            'img[target]',
+            'img[target="some"]',
+            'img[non-target][target]',
+            'img[non-target][target="some"]',
+            'img[]',
+        ];
+
+        foreach ($selectors as $selector)
+        {
+            echo $selector . ' => ' . $this->getAttrFromSelector($selector) . PHP_EOL;
         }
     }
 }

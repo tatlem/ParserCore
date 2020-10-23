@@ -25,7 +25,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
     protected const EMULATE_MODE = true;
     // включить дебаг-режим (только для разработки)
-    protected const DEBUG = 1;
+    protected const DEBUG = 2;
     // дебаг-режим  (только для разработки) [core, default]
     //    protected const DEBUG_MODE = 'talkative';
     protected const DEBUG_MODE = 'default';
@@ -74,6 +74,9 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // H - час
                     // i - минуты
                     //                    'date_format' => 'd.m.Y H:i',
+
+                    // пауза между запросами в секундах (включается только, если сайт начинает блокировку)
+                    //                    'pause'      => 0,
                 ],
                 // настройки витрины (режим HTML)
                 'list'       => [

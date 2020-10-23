@@ -26,7 +26,10 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
     // (НЕ ИЗМЕНЯТЬ САМОСТОЯТЕЛЬНО!)
     const FOR_CORE_VERSION = '1.0';
     // дебаг-режим (только для разработки) - выводит информацию о действиях парсера
-    protected const DEBUG = true;
+    // 0 - отключен
+    // 1 - включен
+    // 2 - включен (очень подробный режим)
+    protected const DEBUG = 1;
 
     public function __construct()
     {
@@ -71,6 +74,9 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // формат даты в RSS
                 // (указывать только если он отличается от стандартного D, d M Y H:i:s O!)
                 //                'date_format_rss' => 'D, d M Y H:i:s O',
+
+                // пауза между запросами в секундах (включается только, если сайт начинает блокировку)
+                //                'pause'       => 0,
             ],
 
             // настройки витрины (режим RSS)
