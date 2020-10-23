@@ -471,10 +471,11 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         $posts  = [];
         $Parser = new self();
 
-        //        $Parser->testGetDate();
+        $Parser->testGetDate('text');
         //        $Parser->testGetAttrFromSelector();
-        $items = $Parser->getItems();
-        $posts = $Parser->getCards(array_keys($items));
+        die;
+        //        $items = $Parser->getItems();
+        //        $posts = $Parser->getCards(array_keys($items));
 
 
         return $posts;

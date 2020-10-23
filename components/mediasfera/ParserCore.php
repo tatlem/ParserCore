@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-10';
+    private const VERSION = '1.0.0-beta-11';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1443,6 +1443,10 @@ class ParserCore
 
         $timeZone = new DateTimeZone($this->timeZone);
 
+        // убираем теги, которые скорее всего содержат ненужную инфу (div)
+        $date = preg_replace('~<div(.*?)</div>~Usi', "", $date);
+
+        // вырезаем лишние теги
         $date = strip_tags($date);
 
         // вырезаем лишние символы
@@ -2305,8 +2309,8 @@ class ParserCore
      *
      */
     public
-    function testGetDate()
-    {
+    function testGetDate($mode = 'all'
+    ) {
         static::showLog('--- format= ' . $this->dateFormat . ' | zone= ' . $this->timeZone . ' ---');
         $valuesDate = [
             '',
@@ -2321,6 +2325,15 @@ class ParserCore
             //            '2020.01.01',
         ];
         $valuesText = [
+            '<div class="bis-topic-header-date">
+                        23.10.20 11:03
+                        <div id="ctl00_content_tllv2_textLinks" class="bis-topic-tags-list" style="display: inline; margin-left: 20px;">
+      
+		<a href="tag.aspx?id=257" class="link">интернет-банк</a>, <a href="tag.aspx?id=1533" class="link">мобильные приложения</a>
+    
+ </div>
+
+                    </div>',
             '22.10.20 18:43 <a href="tag.aspx?id=173" class="link">монеты</a>',
             'сегодня',
             'сегодня в 2 часа',
@@ -2343,9 +2356,18 @@ class ParserCore
             'фигня какая-то'
         ];
 
-        //                $values = $valuesDate;
-        //        $values = $valuesText;
-        $values = array_merge($valuesDate, $valuesText);
+        if ($mode == 'all')
+        {
+            $values = array_merge($valuesDate, $valuesText);
+        }
+        elseif ($mode == 'text')
+        {
+            $values = $valuesText;
+        }
+        elseif ($mode == 'date')
+        {
+            $values = $valuesDate;
+        }
 
         foreach ($values as $value)
         {
