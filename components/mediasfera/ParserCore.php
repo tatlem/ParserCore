@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-11';
+    private const VERSION = '1.0.0-beta-12';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -576,6 +576,13 @@ class ParserCore
             throw new Exception('Пустой результат $itemsParsed');
         }
 
+        if ((int)static::DEBUG >= 3)
+        {
+            echo "------ itemsParsed (before normalize) -----\033[44m" . PHP_EOL;
+            print_r($itemsParsed);
+            echo "------ / itemsParsed (before normalize) -----\033[44m" . PHP_EOL;
+        }
+
         static::showLog(PHP_EOL . '----------------------------------');
         static::showLog('  нормализация данных (избавление от дублей, объединение одинаковых)...');
         static::showLog('----------------------------------');
@@ -583,6 +590,12 @@ class ParserCore
         $itemsParsed = $this->normalizeItems($itemsParsed);
         static::showLog('Сделано');
 
+        if ((int)static::DEBUG >= 3)
+        {
+            echo "------ itemsParsed (normalized) -----\033[44m" . PHP_EOL;
+            print_r($itemsParsed);
+            echo "------ / itemsParsed (normalized) -----\033[44m" . PHP_EOL;
+        }
 
         static::showLog(PHP_EOL . '----------------------------------');
         static::showLog('  перевод данных в формат клиента...');
@@ -1205,7 +1218,8 @@ class ParserCore
 
         //        $elements = $Crawler->filterXPath('//body/text() | //body//*');
         //        $elements = $Crawler->filterXPath('//body//text() | //body//*');
-        $elements = $Crawler->filterXPath('//body//node()');
+        //        $elements = $Crawler->filterXPath('//body//node()');
+        $elements = $Crawler->filterXPath('//body/fingli/node()');
 
         if (!count($elements))
         {
@@ -1214,10 +1228,14 @@ class ParserCore
 
         foreach ($elements as $element)
         {
+            $tagName = '';
+            $val     = '';
+            $text    = '';
+            $data    = [];
+
             $tagName = !empty($element->nodeName) ? $element->nodeName : '#text';
             $val     = $this->stripText($element->nodeValue);
             $text    = $this->stripText($element->textContent);
-            $data    = [];
 
 
             // обработка на основе тега
@@ -1228,6 +1246,7 @@ class ParserCore
                 case '#text':
                     if (!empty($val))
                     {
+                        //                        echo '{' . $val . '}' . PHP_EOL;
                         $data = [
                             'type' => self::TYPE_TEXT,
                             'text' => $val,
@@ -1368,6 +1387,7 @@ class ParserCore
                                     }
                                 }
                             }
+
 
                             // делаем ссылку у которой текст = URL внутренней картинки и/или текст
                             if (!empty($nodeText) && !empty($url))
@@ -2325,6 +2345,7 @@ class ParserCore
             //            '2020.01.01',
         ];
         $valuesText = [
+            ' 22 Октября, Четверг',
             '<div class="bis-topic-header-date">
                         23.10.20 11:03
                         <div id="ctl00_content_tllv2_textLinks" class="bis-topic-tags-list" style="display: inline; margin-left: 20px;">

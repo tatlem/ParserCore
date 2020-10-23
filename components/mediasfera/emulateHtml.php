@@ -1,4 +1,6 @@
 <?php
+// крутые html примеры https://www.htmhell.dev/1/
+
 return [
     'https://test/incorrect1.xml' => <<<'HTML'
 
@@ -39,8 +41,88 @@ return [
 
 HTML,
 
+    'https://test/mutants' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
 
 
+<div id="container">
+
+    <div id="title">card bolvan</div>
+    <div id="text">
+    
+    
+    
+    
+        
+<!-- crazy mutants -->
+<div>
+    <iframe><a href="/m1">mutant-link1</a></iframe>    
+</div>    
+href=https://www.in100gramm.com/media_zebra/.ru@mail.ru">инстаграме Зебра ТВ</strong
+
+
+<blockquote><q>Я две цитаты</q></blockquote>
+<div><a href="#1"><p><blockquote>Обернутая ссылкой цитата становится ссылкой :(</blockquote></p></div></a>
+    
+Это предложение <b><a href="/#">колбасит</a></b> как <q>фиг</q> <a href="####">знает</a> ЧТО!
+    
+ссылки всякие:   
+<a href="papa"><a href="child"><strong>двойная ссылка</strong></a></a>
+<a href="/ups">ой, забыли меня закрыть
+<a href="/not-ups">а я вот закрыта</a>
+<a>Я старая больная ссылка</a>
+
+тексты в таблицах, листах
+<table><tr><td>А</td><td>Б</td></tr></table>
+<ul><li>папа1</li><li>папа2<ul><li>сын1</li><li>сын2</li></ul></li><li>папа3</li></ul>
+
+формы!
+<form>
+<label>Скажите, что вы</label>
+<input type="text" name="youare" value="не робот">
+и не хотите есть эти батарейки
+</form>
+
+-- 1 --
+<h1>Product Status</h1>
+<h2>Is the product available?</h2>
+<div>
+  <h3>
+    <div>
+      <div>
+        <i>
+          <h3 class="message is-success">
+            It‘s <a>available</a>.
+          </h3>
+        </i>
+      </div>
+    </div>
+  </h3>
+</div>
+
+-- 2 --
+<section>
+  <section>
+    <h2>Overview</h2>
+    <figure class="card" data-url="image1.html" style="background: url(image1.jpg)">
+      <figcaption>
+        <h4>My heading</h4>
+        <article>Teasertext...</article>
+      </figcaption>
+    </figure>
+    <figure class="card" data-url="image2.html" style="background: url(image2.jpg)"> … </figure>
+  </section>
+</section>
+    
+    
+    </div>
+</div>
+</body>
+</html>
+HTML
+    ,
 
     'https://test/news-bolvanka3' => <<<'HTML'
 <!DOCTYPE html>
@@ -53,8 +135,9 @@ HTML,
     <div id="title">card bolvan</div>
     <div id="text">
     
-    
-    <div id="text" class="page-content io-article-body">
+  
+
+    <div id="text2" class="page-content io-article-body">
                 
 <p>Из реки Бельбек запланировано брать 50 тысяч кубометров воды в сутки для водоснабжения Севастополя, что составляет 1,5 млн кубов в месяц. Из Кадыковского карьера — 15 тысяч кубометров. Об этом сегодня в ходе посещения строительных объектов и Чернореченского водохранилища рассказал глава города <strong>Михаил Развожаев</strong>, сообщает ИА SevastopolMedia.</p> <p>— Вы сами видите какой объём воды: 16 млн кубометров на сегодняшний день. Воды на три месяца, если будем в таком же режиме потреблять. Меньше мы не можем. Водохранилище начинает наполняться в конце декабря за счёт осадков. Но пока прогноз неутешительный. Поэтому мы должны подстраховаться, чтобы в случае продолжения засухи и невосполнения запасов обеспечить Севастополь стабильным водоснабжением, — сказал он.</p><div class="inside_banner noprint"><!--AdFox START-->
 <!--PrimaMedia-->
@@ -170,6 +253,12 @@ HTML
     
     <div id="text">
     
+    
+    текст1 <a href="/1">текст-ссылки-1</a> текст2 
+    
+    
+        
+        
 Простой текст без параграфа
 
 <p>Проверка текста&nbsp;который может<br> 
@@ -262,7 +351,8 @@ HTML
 	<title>Тестоваая новость 1</title>
 	<author>fingli</author>
 	<pubDate>Thu, 15 Oct 2020 23:31:38 +0400</pubDate>
-	<link>https://test/news-bolvanka3</link>
+	<link>https://test/mutants</link>
+	<link1>https://test/news-bolvanka1</link1>
 	<enclosure url="/test.jpg" type="image/jpeg"></enclosure>
 	<description><![CDATA[ Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка<div style="clear:both;"></div> ]]></description>
 </item>

@@ -23,7 +23,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     const FOR_CORE_VERSION = '1.0.0';
     // режим эмуляции запросов (только для разработки)
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
-    protected const EMULATE_MODE = false;
+    protected const EMULATE_MODE = true;
     // включить дебаг-режим (только для разработки)
     protected const DEBUG = 1;
     // дебаг-режим  (только для разработки) [core, default]
@@ -36,7 +36,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         // 2 - rss emulate
         // 3 - CORE_ClassicalmusicnewsParsingRu_Parser
         // 4 - RSS https://www.riatomsk.ru/rss.xml
-        $configType = 4;
+        $configType = 2;
 
         if ($configType == 1)
         {
@@ -188,8 +188,8 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'rss'        => [
                     // относительный URL где находится RSS
                     // (обязательный)
-                    //                                        'url'                 => '/rss.xml',
-                    'url'                 => '/incorrect1.xml',
+                    'url'                 => '/rss.xml',
+                    //                    'url'                 => '/incorrect1.xml',
                     //                    'url'                 => '/gems/backend/rssTwoExample2.xml',
 
                     // css селектор для элемента витрины (желательно от корня)
@@ -471,11 +471,11 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         $posts  = [];
         $Parser = new self();
 
-        $Parser->testGetDate('text');
+        //        $Parser->testGetDate('text');
         //        $Parser->testGetAttrFromSelector();
-        die;
-        //        $items = $Parser->getItems();
-        //        $posts = $Parser->getCards(array_keys($items));
+        //        die;
+        $items = $Parser->getItems();
+        $posts = $Parser->getCards(array_keys($items));
 
 
         return $posts;
