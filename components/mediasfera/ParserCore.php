@@ -181,8 +181,10 @@ class ParserCore
         'mode'       => 'desktop',
 
         // максимальное количество новостей, берушихся с витрины
-        // ИСПОЛЬЗУЕТСЯ ТОЛЬКО В РЕЖИМЕ DEBUG = 2 и выше
+        // ИСПОЛЬЗУЕТСЯ ТОЛЬКО В РЕЖИМЕ DEBUG
         // в остальных случаях жестко задается ядром
+        //
+        // не забывайте отключать лимит при сдаче парсера!
         'itemsLimit' => self::MAX_ITEMS,
 
         // настройки сайта
@@ -2313,7 +2315,7 @@ class ParserCore
         $parserLimit = $this->config['itemsLimit'] ?? null;
         $realLimit   = 10;
 
-        if ((int)static::DEBUG >= 2)
+        if ((int)static::DEBUG >= 1)
         {
             if (!empty($parserLimit))
             {
