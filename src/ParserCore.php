@@ -9,17 +9,17 @@
  *
  */
 
-namespace fingli\parserCore;
+namespace fingli\ParserCore;
 
 //use app\components\parser\NewsPostItem;
 //use app\components\parser\NewsPost;
+//use app\components\Helper;
 use DateTime;
 use DateTimeZone;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\CssSelector\CssSelectorConverter;
 use Symfony\Component\DomCrawler\UriResolver;
 use yii\base\Exception;
-use app\components\Helper;
 use DateTimeImmutable;
 use DateInterval;
 use wapmorgan\TimeParser\TimeParser;
@@ -78,7 +78,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-19';
+    private const VERSION = '1.0.0-beta-20';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
