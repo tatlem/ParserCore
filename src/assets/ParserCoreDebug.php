@@ -12,7 +12,7 @@
 
 namespace app\components\parser\news;
 
-use app\components\mediasfera\ParserCore;
+use fingli\ParserCore\ParserCore;
 use app\components\parser\ParserInterface;
 
 class ParserCoreDebug extends ParserCore implements ParserInterface

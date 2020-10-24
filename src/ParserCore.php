@@ -80,8 +80,6 @@ class ParserCore
 {
     // версия ядра (см. Версионирование)
     private const VERSION = '1.0.0-beta20';
-    // переменная для передачи классов клиента в ядро
-    //    protected array $importClasses;
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
