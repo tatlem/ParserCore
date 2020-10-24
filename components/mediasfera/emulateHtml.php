@@ -53,14 +53,15 @@ HTML,
     <div id="text">
     
     
-    
+    <p>текст 1</p>
+    <p>текст 2</p>
     
         
 <!-- crazy mutants -->
 <div>
     <iframe><a href="/m1">mutant-link1</a></iframe>    
 </div>    
-href=https://www.in100gramm.com/media_zebra/.ru@mail.ru">инстаграме Зебра ТВ</strong
+
 
 
 <blockquote><q>Я две цитаты</q></blockquote>
@@ -347,6 +348,8 @@ HTML
     'https://test/rss.xml'              => <<<'HTML'
 <?xml version="1.0" encoding="UTF-8" ?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
 <channel>
+
+
 <item>
 	<title>Тестоваая новость 1</title>
 	<author>fingli</author>
@@ -355,6 +358,12 @@ HTML
 	<link1>https://test/news-bolvanka1</link1>
 	<enclosure url="/test.jpg" type="image/jpeg"></enclosure>
 	<description><![CDATA[ Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка<div style="clear:both;"></div> ]]></description>
+</item>
+
+<item>
+	<title></title>
+	<pubDate></pubDate>
+	<link></link>
 </item>
 </channel>
 </rss>
@@ -366,8 +375,8 @@ HTML
 <html>
 <body>
 <div id="container">
-<a href="https://native.ru/news-bolvanka">bolvan-simple</a>
-<a href="https://native.ru/news-bolvanka-404">bolvan-404</a>
+<a href="https://test/news-bolvanka">bolvan-simple</a>
+<a href="https://test/news-bolvanka-404">bolvan-404</a>
 </div>
 </body>
 </html>

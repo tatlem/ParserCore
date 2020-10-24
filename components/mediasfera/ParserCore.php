@@ -76,7 +76,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-13-friday';
+    private const VERSION = '1.0.0-beta-14';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -151,6 +151,23 @@ class ParserCore
         'source',
         'blockquote',
         'q',
+    ];
+    // стоп-слова (которые вырезаем) из даты
+    protected array $dateStopWords = [
+        'понедельник',
+        'вторник',
+        'среда',
+        'четверг',
+        'пятница',
+        'суббота',
+        'воскресенье',
+        'пн',
+        'вт',
+        'ср',
+        'чт',
+        'пт',
+        'сб',
+        'вс',
     ];
     // конфигурация для конкретного экземпляра
     public array $config = [
@@ -359,6 +376,39 @@ class ParserCore
                     'element' => $requiredPropsCard
                 ]
             ];
+        }
+
+        // опциональные свойства элемента (date, description) должны быть заполнены хотя бы в одном месте
+        if ($this->mode === 'rss')
+        {
+            // @deprecated дескрипшен возьмем из тайтла
+            //            if (
+            //                empty($this->config['rss']['element-description']) &&
+            //                empty($this->config['element']['element-description'])
+            //            )
+            //            {
+            //                throw new Exception("Необходимо заполнить element-description или в витрине, или в карточке");
+            //            }
+
+            // дата
+            if (
+                empty($this->config['rss']['element-date']) &&
+                empty($this->config['element']['element-date'])
+            )
+            {
+                throw new Exception("Необходимо заполнить element-date или в витрине, или в карточке");
+            }
+        }
+        else
+        {
+            // дата
+            if (
+                empty($this->config['list']['element-date']) &&
+                empty($this->config['element']['element-date'])
+            )
+            {
+                throw new Exception("Необходимо заполнить element-date или в витрине, или в карточке");
+            }
         }
 
         $props = get_object_vars($this);
@@ -578,7 +628,7 @@ class ParserCore
 
         if (empty($itemsParsed))
         {
-            throw new Exception('Пустой результат $itemsParsed');
+            throw new Exception('Не удалось распарсить карточки. (Пустой результат $itemsParsed)');
         }
 
         if ((int)static::DEBUG >= 3)
@@ -589,7 +639,7 @@ class ParserCore
         }
 
         static::showLog(PHP_EOL . '----------------------------------');
-        static::showLog('  нормализация данных (избавление от дублей, объединение одинаковых)...');
+        static::showLog('  нормализация данных (объединение одинаковых)...');
         static::showLog('----------------------------------');
 
         $itemsParsed = $this->normalizeItems($itemsParsed);
@@ -638,6 +688,14 @@ class ParserCore
         return $items;
     }
 
+    /**
+     *
+     * Нормализация данных из текста новости
+     *
+     * @param array $data
+     *
+     * @return array
+     */
     protected function normalizeItemData(array $data)
     : array {
         $dataNew = [];
@@ -688,7 +746,6 @@ class ParserCore
 
                         // очищяем акумулятор
                         $acumulator = [];
-                        //                        $dataNew += $acumulator;
                     }
                     // если нет, то просто элемент
                     else
@@ -731,8 +788,15 @@ class ParserCore
      * NewsPostItem
      *
      */
+    // $this->items - то что собрали с витрины
+    // $cards - то что собрали с карточек
     protected function getAdaptiveToParser1500(array $cards)
     : array {
+        if (empty($cards))
+        {
+            throw new Exception('Нет данных из карточек новостей для адаптации');
+        }
+
         $posts = [];
 
         if ($this->items)
@@ -1077,7 +1141,7 @@ class ParserCore
             }
             else
             {
-                static::showLog('-- Не найдены данные из контейнера ' . $this->config['element']['container'] . '', 'warning');
+                static::showLog('-- Не найдены данные из контейнера карточки ' . $this->config['element']['container'] . '', 'warning');
             }
         }
         elseif ((int)static::DEBUG >= 1)
@@ -1480,6 +1544,11 @@ class ParserCore
     : ?string {
         if (empty($date))
         {
+            if ((int)static::DEBUG >= 1)
+            {
+                static::showLog('Дата пустая!', 'warning');
+            }
+
             return '';
         }
 
@@ -1498,6 +1567,35 @@ class ParserCore
             $date = str_replace(',', '', $date);
         }
 
+        // к нижнему регистру
+        $date = mb_strtolower($date);
+
+        // вырезаем стоп-слова
+        if (!empty($this->dateStopWords))
+        {
+            foreach ($this->dateStopWords as $stopWord)
+            {
+                $date = str_replace($stopWord, '', $date);
+            }
+        }
+
+        // вырезаем безхозные точки
+        $date = $date . ' ';
+        $date = preg_replace('/([^\S])(?<dot>\.)[^\S]/', '', $date);
+
+
+        //        echo $date;
+
+        // если только текст, то не делаем ничего
+        //        if (!preg_match('/\d/', $date))
+        //        {
+        //            if ((int)static::DEBUG >= 1)
+        //            {
+        //                static::showLog('Дату невозможно идентифицировать (отсутствуют цифры)', 'warning');
+        //            }
+        //
+        //            return '';
+        //        }
         // есть текст
         if (preg_match('/[\p{Cyrillic}]+/u', $date))
         {
@@ -1738,6 +1836,18 @@ class ParserCore
             'октября'  => '10',
             'ноября'   => '11',
             'декабря'  => '12',
+            'январь'   => '01',
+            'февраль'  => '02',
+            'март'     => '03',
+            'апрель'   => '04',
+            'май'      => '05',
+            'июнь'     => '06',
+            'июль'     => '07',
+            'август'   => '08',
+            'сентябрь' => '09',
+            'октябрь'  => '10',
+            'ноябрь'   => '11',
+            'декабрь'  => '12',
             'янв'      => '01',
             'фев'      => '02',
             'мар'      => '03',
@@ -2231,7 +2341,7 @@ class ParserCore
 
                 if (empty($this->getValFromKeyChain($arrayTarget, $keys)))
                 {
-                    throw new Exception('<Parser>' . $keyPath . ' - должен быть указан');
+                    throw new Exception($keyPath . ' - должен быть указан');
                 }
             }
             else
@@ -2361,6 +2471,8 @@ class ParserCore
      * -------- ТЕСТЫ ----------
      *
      */
+
+    // @note чтобы потестить даты без текста должен быть включен режим desktop
     public
     function testGetDate($mode = 'all'
     ) {
@@ -2378,15 +2490,15 @@ class ParserCore
             //            '2020.01.01',
         ];
         $valuesText = [
+            'Sat, 24 Oct 2020 07:21:09 +0400',
             ' 22 Октября, Четверг',
+            ' 22 Октября, пт.',
+            ' 22 октябрь, пятница',
+            ' январь',
+            //            ' 22 октябрь, пятница-развратница',
             '<div class="bis-topic-header-date">
                         23.10.20 11:03
-                        <div id="ctl00_content_tllv2_textLinks" class="bis-topic-tags-list" style="display: inline; margin-left: 20px;">
-      
-		<a href="tag.aspx?id=257" class="link">интернет-банк</a>, <a href="tag.aspx?id=1533" class="link">мобильные приложения</a>
-    
- </div>
-
+                        <div id="ctl00_content_tllv2_textLinks" class="bis-topic-tags-list" style="display: inline; margin-left: 20px;"><a href="tag.aspx?id=257" class="link">интернет-банк</a>, <a href="tag.aspx?id=1533" class="link">мобильные приложения</a> </div>
                     </div>',
             '22.10.20 18:43 <a href="tag.aspx?id=173" class="link">монеты</a>',
             'сегодня',
