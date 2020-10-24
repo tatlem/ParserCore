@@ -34,7 +34,7 @@
   },
   "autoload": {
     "psr-4": {
-      "fingli\\parserCore\\": "src/"
+      "fingli\\ParserCore\\": "src/"
     },
     "exclude-from-classmap": [
       "/tests/"

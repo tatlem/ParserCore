@@ -9,10 +9,10 @@
  *
  */
 
-namespace app\components\mediasfera;
+namespace fingli\parserCore;
 
-use app\components\parser\NewsPostItem;
-use app\components\parser\NewsPost;
+//use app\components\parser\NewsPostItem;
+//use app\components\parser\NewsPost;
 use DateTime;
 use DateTimeZone;
 use Symfony\Component\DomCrawler\Crawler;
