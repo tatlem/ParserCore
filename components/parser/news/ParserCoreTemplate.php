@@ -41,7 +41,8 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
             'mode'    => 'rss',
 
             // максимальное количество новостей, берушихся с витрины
-            // (опционально)
+            // ИСПОЛЬЗУЕТСЯ ТОЛЬКО В РЕЖИМЕ DEBUG = 2 и выше
+            // в остальных случаях жестко задается ядром
             //            'itemsLimit' => 10,
 
             // настройки сайта

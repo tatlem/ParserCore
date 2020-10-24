@@ -78,13 +78,13 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-15';
+    private const VERSION = '1.0.0-beta-16';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
     private const WORK_DIR = __DIR__ . '/../mediasfera/';
     // лимит на кол-во элементов по умолчанию
-    private const MAX_ITEMS = 20;
+    private const MAX_ITEMS = 10;
     // максимальный размер дескрипшена
     private const MAX_DESCRIPTION_LENGTH = 200;
     // лимит на кол-во элементов
@@ -181,6 +181,8 @@ class ParserCore
         'mode'       => 'desktop',
 
         // максимальное количество новостей, берушихся с витрины
+        // ИСПОЛЬЗУЕТСЯ ТОЛЬКО В РЕЖИМЕ DEBUG = 2 и выше
+        // в остальных случаях жестко задается ядром
         'itemsLimit' => self::MAX_ITEMS,
 
         // настройки сайта
@@ -448,9 +450,10 @@ class ParserCore
     {
         static::showLog(
             '--------------------------------------------------------------------' . PHP_EOL .
-            ' Старт парсера на ядре ' . self::VERSION . ' [режим: ' . $this->mode . ', макс. новостей: ' . $this->itemsLimit . ']' . PHP_EOL .
+            ' Старт парсера ' . static::class . PHP_EOL .
+            ' на ядре ' . self::VERSION . ' [Режим: ' . $this->mode . '; Макс. новостей: ' . $this->itemsLimit . ']' . PHP_EOL .
             ' Время старта: ' . date('d.m.Y H:i:s') . ' (' . $this->timeZone . ')' . PHP_EOL .
-            '--------------------------------------------------------------------', 'default', true, true);
+            '--------------------------------------------------------------------');
 
         static::showLog(PHP_EOL . '----------------------------------');
         static::showLog(' Запрашиваем витрину ' . (($this->mode == 'rss') ? 'RSS' : 'HTML'));
@@ -1978,7 +1981,7 @@ class ParserCore
     : array {
         $this->showLog('getElementsDataFromRss($html, "' . $elementSelector . '", "' . $get . '", "' . $limit . '", Crawler "' . (bool)$Crawler . '" ):', 'talkative');
 
-        if ((int)static::DEBUG >= 2)
+        if ((int)static::DEBUG >= 2 && !empty($xml))
         {
             echo "------ RAW XML  -----\033[44m" . PHP_EOL;
             echo $xml;
@@ -2306,7 +2309,24 @@ class ParserCore
     function getItemsLimit()
     : int
     {
-        return $this->config['itemsLimit'] ?? self::MAX_ITEMS;
+        $coreLimit   = self::MAX_ITEMS;
+        $parserLimit = $this->config['itemsLimit'] ?? null;
+        $realLimit   = 10;
+
+        if ((int)static::DEBUG >= 2)
+        {
+            if (!empty($parserLimit))
+            {
+                $realLimit = $parserLimit;
+            }
+        }
+        else
+        {
+            $realLimit = $coreLimit;
+        }
+
+
+        return $realLimit;
     }
 
     // установка URL сайта
