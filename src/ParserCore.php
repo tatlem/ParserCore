@@ -83,7 +83,6 @@ class ParserCore
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
-    //    private const WORK_DIR = __DIR__ . '/../mediasfera/';
     private const WORK_DIR = __DIR__ . '/assets/';
     // лимит на кол-во элементов по умолчанию
     private const MAX_ITEMS = 10;
