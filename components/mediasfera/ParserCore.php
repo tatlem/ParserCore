@@ -78,7 +78,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-16';
+    private const VERSION = '1.0.0-beta-17';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -454,7 +454,7 @@ class ParserCore
             '--------------------------------------------------------------------' . PHP_EOL .
             ' Старт парсера ' . static::class . PHP_EOL .
             ' на ядре ' . self::VERSION . ' [Режим: ' . $this->mode . '; Макс. новостей: ' . $this->itemsLimit . ']' . PHP_EOL .
-            ' Время старта: ' . date('d.m.Y H:i:s') . ' (' . $this->timeZone . ')' . PHP_EOL .
+            ' Время старта: ' . date('d.m.Y H:i:s') . '; Час. пояс ' . $this->timeZone . '' . PHP_EOL .
             '--------------------------------------------------------------------');
 
         static::showLog(PHP_EOL . '----------------------------------');
@@ -828,6 +828,16 @@ class ParserCore
                 // мержим значения
 
                 // description
+                if (isset($listItem['description']))
+                {
+                    $listItem['description'] = $this->stripText($listItem['description']) ?? '';
+                }
+
+                if (isset($cardItem['description']))
+                {
+                    $cardItem['description'] = $this->stripText($cardItem['description']) ?? '';
+                }
+
                 if (!empty($listItem['description']))
                 {
                     $description = $listItem['description'];
@@ -1581,6 +1591,15 @@ class ParserCore
         return trim($text);
     }
 
+    // переводим в формат Гринвича
+    private function getCorrectedDateToGrinvich(DateTimeImmutable $dateTime)
+    : ?string {
+        $dateTime2 = new DateTime(null, new DateTimeZone('UTC'));
+        $dateTime2->setTimestamp($dateTime->getTimestamp());
+
+        return $dateTime2->format('Y-m-d H:i:s');
+    }
+
     /**
      * Парсинг даты (числовой или строковый формат)
      *
@@ -1605,6 +1624,13 @@ class ParserCore
         }
 
         $timeZone = new DateTimeZone($this->timeZone);
+
+        if ($this->currentElement == 'rss')
+        {
+            $dateTime = DateTimeImmutable::createFromFormat($this->dateFormatRss, $date, $timeZone);
+
+            return $this->getCorrectedDateToGrinvich($dateTime);
+        }
 
         // убираем теги, которые скорее всего содержат ненужную инфу (div)
         $date = preg_replace('~<div(.*?)</div>~Usi', "", $date);
@@ -1635,19 +1661,6 @@ class ParserCore
         $date = $date . ' ';
         $date = preg_replace('/([^\S])(?<dot>\.)[^\S]/', '', $date);
 
-
-        //        echo $date;
-
-        // если только текст, то не делаем ничего
-        //        if (!preg_match('/\d/', $date))
-        //        {
-        //            if ((int)static::DEBUG >= 1)
-        //            {
-        //                static::showLog('Дату невозможно идентифицировать (отсутствуют цифры)', 'warning');
-        //            }
-        //
-        //            return '';
-        //        }
         // есть текст
         if (preg_match('/[\p{Cyrillic}]+/u', $date))
         {
@@ -1663,10 +1676,7 @@ class ParserCore
         {
             if (1 && 'переводим в формат Гринвича')
             {
-                $dateTime2 = new DateTime(null, new DateTimeZone('UTC'));
-                $dateTime2->setTimestamp($dateTime->getTimestamp());
-
-                return $dateTime2->format('Y-m-d H:i:s');
+                return $this->getCorrectedDateToGrinvich($dateTime);
             }
             else
             {
@@ -2014,6 +2024,8 @@ class ParserCore
         $Converter       = new CssSelectorConverter(false);
         $attribute       = $this->getAttrFromSelector($elementSelector);
         $elementSelector = $Converter->toXPath($elementSelector);
+
+        //        echo $elementSelector;
 
         if ($limit > 0)
         {

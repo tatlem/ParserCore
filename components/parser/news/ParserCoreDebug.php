@@ -199,9 +199,8 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'rss'        => [
                     // относительный URL где находится RSS
                     // (обязательный)
-                    'url'                 => '/rss.xml',
-                    //                    'url'                 => '/incorrect1.xml',
-                    //                    'url'                 => '/gems/backend/rssTwoExample2.xml',
+                    //                    'url'                 => '/rss.xml',
+                    'url'                 => '/incorrect2.xml',
 
                     // css селектор для элемента витрины (желательно от корня)
                     // (обязательный)

@@ -40,6 +40,33 @@ return [
 
 
 HTML,
+    'https://test/incorrect2.xml' => <<<'HTML'
+
+<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+    <language>ru</language>
+    <title>Братская студия телевидения - новости Братска</title>
+    <description>Новости города Братска и Иркутской области</description>
+    <link>https://bst.bratsk.ru</link>
+    <yandex:logo>https://bst.bratsk.ru/bstlogo.png</yandex:logo>
+    <item>
+      <title>Иркутянин варит сыры с сибирской изюминкой</title>
+      <link>https://bst.bratsk.ru/news/43221</link>
+      <pdalink>https://bst.bratsk.ru/news/43221</pdalink>
+      <pubDate>Fri, 23 Oct 2020 18:45:00 +0800</pubDate>
+      <description>&lt;p&gt;&lt;/p&gt;&lt;p&gt;Его любят и взрослые, и дети. А ещё он полезен для здоровья. Но мало, кто знает, как его создают. Сейчас речь пойдёт о сыре. Иркутянин не только наладил производство ценного продукта, но и использует в своём деле необычные рецепты&lt;/p&gt;
+</description>
+    </item>
+
+
+
+</channel>
+</rss>
+
+
+
+HTML,
 
     'https://test/element-text-before' => <<<'HTML'
 <!DOCTYPE html>
