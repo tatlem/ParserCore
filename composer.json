@@ -1,6 +1,6 @@
 {
   "name": "fingli/parser-core",
-  "version": "1.0.0-beta-20",
+  "version": "1.0.0-beta20",
   "type": "library",
   "description": "PHP news parser core",
   "keywords": [
@@ -40,8 +40,5 @@
       "/tests/"
     ]
   },
-  "minimum-stability": "stable",
-  "extra": {
-    "branch-version": "1.1"
-  }
+  "minimum-stability": "beta"
 }
