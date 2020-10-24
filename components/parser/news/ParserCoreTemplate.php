@@ -189,6 +189,10 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // (можно несколько через запятую)
                 // (опционально)
                 'ignore-selectors'    => '',
+
+                // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня)
+                // (опционально)
+                'element-text-before' => '',
             ]
         ];
 

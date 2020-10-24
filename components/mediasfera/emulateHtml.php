@@ -1,5 +1,5 @@
 <?php
-// крутые html примеры https://www.htmhell.dev/1/
+// крутые html примеры для теста https://www.htmhell.dev/1/
 
 return [
     'https://test/incorrect1.xml' => <<<'HTML'
@@ -40,6 +40,37 @@ return [
 
 
 HTML,
+
+    'https://test/element-text-before' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2 id="before1">
+Вставляемый <strong>текст</strong> извне
+</h2>
+
+<img id="before2" src="/before.jpg" />
+
+<div id="before3">
+    <div>
+        <h2>Заголовок извне №3</h2>
+        <p>текст извне №3</p>
+    </div>
+</div>
+
+<div id="container">
+
+    <div id="title">element-text-before</div>
+    <div id="text">
+    
+    Оригинальный текст новости
+    </div>
+</div>
+</body>
+</html>
+HTML
+    ,
 
     'https://test/mutants' => <<<'HTML'
 <!DOCTYPE html>
@@ -354,7 +385,8 @@ HTML
 	<title>Тестоваая новость 1</title>
 	<author>fingli</author>
 	<pubDate>Thu, 15 Oct 2020 23:31:38 +0400</pubDate>
-	<link>https://test/mutants</link>
+	<link>https://test/element-text-before</link>
+	<link1>https://test/mutants</link1>
 	<link1>https://test/news-bolvanka1</link1>
 	<enclosure url="/test.jpg" type="image/jpeg"></enclosure>
 	<description><![CDATA[ Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка Всё об одном из удобнейших приспособлений для уборки участка<div style="clear:both;"></div> ]]></description>

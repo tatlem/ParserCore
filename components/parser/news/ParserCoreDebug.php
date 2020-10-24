@@ -34,7 +34,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     {
         // 1 - desktop emulate
         // 2 - rss emulate
-        $configType = 1;
+        $configType = 2;
 
         if ($configType == 1)
         {
@@ -221,7 +221,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css селектор для даты элемента
                     // (опционально)
-                    'element-date'        => '',
+                    'element-date'        => 'pubDate',
                 ],
 
                 // настройка карточки элемента
@@ -254,7 +254,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     'element-image'       => 'img[data-img][src]',
 
                     // css-селектор для цитаты
-                    // (если не заполнено, то по умолчанию берутся теги: blockquote и q)
+                    // (если не заполнено, то по умолчанию ищутся теги: <blockquote> и <q>)
                     // (опционально)
                     'element-quote'       => 'em',
 
@@ -262,6 +262,10 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // (можно несколько через запятую)
                     // (опционально)
                     'ignore-selectors'    => '.reklama, span.bad',
+
+                    // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня)
+                    // (опционально)
+                    'element-text-before' => '#before1, #before2, #before3',
                 ]
             ];
         }

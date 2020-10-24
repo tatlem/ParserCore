@@ -27,6 +27,8 @@ use wapmorgan\TimeParser\TimeParser;
 /**
  * # Ядро для парсеров
  *
+ * (с) "Не парься! Просто парси!"
+ *
  * ## Задачи
  *
  * Ядро решает две задачи:
@@ -76,7 +78,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0-beta-14';
+    private const VERSION = '1.0.0-beta-15';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -123,6 +125,8 @@ class ParserCore
     private string $currentUrl;
     // элемент который обрабатывается сейчас
     private string $currentElement = 'none';
+    // здесь хранится полный html из ->getPage
+    private string $currentPageFullHtml;
     // протокол и домен
     protected string $siteUrl = '';
     // режим работы парсера
@@ -287,30 +291,35 @@ class ParserCore
             // css-селектор для контейнера карточки
             // (все дальнейшие пути строятся относительно этого контейнера)
             // (обязательный)
-            'container'        => '',
+            'container'           => '',
 
             // css-селектор для основного текста
             // (для заполнения модели NewsPostItem)
             // (обязательный)
-            'element-text'     => '',
+            'element-text'        => '',
 
             // css-селектор для получения даты создания новости
             // (заполняется только, если отсутствует в витрине)
-            'element-date'     => '',
+            'element-date'        => '',
 
             // css селектор для получения картинки
             // !должен содержать конечный аттрибут src! (например: img.main-image[src])
             // (заполняется только, если отсутствует в витрине)
-            'element-image'    => '',
+            'element-image'       => '',
 
             // css-селектор для цитаты
+            // (если не заполнено, то по умолчанию ищутся теги: <blockquote> и <q>)
             // (опционально)
-            'element-quote'    => '',
+            'element-quote'       => '',
 
-            // игнорируемые css-селекторы
-            // (можно через запятую)
+            // игнорируемые css-селекторы (будут вырезаться из результата)
+            // (можно несколько через запятую)
             // (опционально)
-            'ignore-selectors' => '',
+            'ignore-selectors'    => '',
+
+            // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня)
+            // (опционально)
+            'element-text-before' => '',
         ]
     ];
 
@@ -1129,7 +1138,7 @@ class ParserCore
 
                 static::showLog('-- начинаем разбор текста новости во внутренний формат itemData...');
 
-                // массив для NewsPostItem
+                // куски текста (массив для NewsPostItem)
                 $elItemData = $this->getItemData($elTextHtml);
 
                 return [
@@ -1246,7 +1255,40 @@ class ParserCore
     }
 
     /**
-     * Подготовка html текста новости для разбора
+     *
+     * Вставляем в начало текста новости элементы из селекторов element-text-before
+     *
+     * @param string $html - html текст новости element-text
+     *
+     * @return string
+     */
+    protected function getHtmlWithPrependedSelectors(string $html)
+    : string {
+        if (!empty($this->config['element']['element-text-before']) && !empty($this->currentPageFullHtml))
+        {
+            $htmlPrepended = '';
+
+            // найдем нужные селекторы в полном html страницы
+            $elements = $this->getElementsDataFromHtml($this->currentPageFullHtml, '', $this->config['element']['element-text-before'], 'html');
+
+            if (!empty($elements))
+            {
+                foreach ($elements as $elementHtml)
+                {
+                    $htmlPrepended .= $elementHtml;
+                }
+            }
+
+            //            var_dump($htmlPrepended);
+
+            $html = $htmlPrepended . $html;
+        }
+
+        return $html;
+    }
+
+    /**
+     * Подготовка html текста новости element-text для разбора
      * Вырезаем все теги кроме TYPE_IMAGE, TYPE_QUOTE, TYPE_LINK, TYPE_VIDEO
      *
      * @param string $html - подготовленный html без лишнего
@@ -1255,7 +1297,13 @@ class ParserCore
      */
     protected function getCardTextHtml(string $html)
     : string {
+        // добавляем css-селекторы в начало текста
+        $html = $this->getHtmlWithPrependedSelectors($html);
+
+        // вырезаем игнорируемые теги
         $html = $this->getHtmlWithoutIgnoredSelectors($html);
+
+        // подменяем цитаты
         $html = $this->getHtmlWithSubstitutedQuotes($html);
 
         // коррекция тегов для правильной обрезки
@@ -1312,7 +1360,6 @@ class ParserCore
             $tagName = !empty($element->nodeName) ? $element->nodeName : '#text';
             $val     = $this->stripText($element->nodeValue);
             $text    = $this->stripText($element->textContent);
-
 
             // обработка на основе тега
             switch ($tagName)
@@ -2160,6 +2207,15 @@ class ParserCore
             $responseHtml = preg_replace('#<style(.*?)>(.*?)</style>#is', '', $responseHtml);
         }
 
+
+        if (is_string($responseHtml) && !empty($responseHtml))
+        {
+            $this->currentPageFullHtml = $responseHtml;
+        }
+        else
+        {
+            $this->currentPageFullHtml = '<get-page-gets-nothing />';
+        }
 
         return $responseHtml;
     }
