@@ -11,9 +11,10 @@
 
 namespace fingli\ParserCore;
 
-//use app\components\parser\NewsPostItem;
-//use app\components\parser\NewsPost;
-//use app\components\Helper;
+use app\components\parser\NewsPostItem;
+use app\components\parser\NewsPost;
+use app\components\Helper;
+
 use DateTime;
 use DateTimeZone;
 use Symfony\Component\DomCrawler\Crawler;
@@ -79,10 +80,13 @@ class ParserCore
 {
     // версия ядра (см. Версионирование)
     private const VERSION = '1.0.0-beta20';
+    // переменная для передачи классов клиента в ядро
+    //    protected array $importClasses;
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
-    private const WORK_DIR = __DIR__ . '/../mediasfera/';
+    //    private const WORK_DIR = __DIR__ . '/../mediasfera/';
+    private const WORK_DIR = __DIR__ . '/assets/';
     // лимит на кол-во элементов по умолчанию
     private const MAX_ITEMS = 10;
     // максимальный размер дескрипшена
@@ -329,6 +333,8 @@ class ParserCore
 
     public function __construct()
     {
+        //        print_r($this->importClasses['NewsPostItem']);
+
         if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
         {
             static::showLog('--- Внимание! Включен режим эмуляции http запросов. Реальные запросы не делаются ---', 'warning', true, true);

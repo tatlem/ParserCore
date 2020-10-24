@@ -434,7 +434,7 @@ HTML
 <html>
 <body>
 <div id="container">
-<a href="https://test/news-bolvanka">bolvan-simple</a>
+<a href="https://test/news-bolvanka1">bolvan-simple</a>
 <a href="https://test/news-bolvanka-404">bolvan-404</a>
 </div>
 </body>
