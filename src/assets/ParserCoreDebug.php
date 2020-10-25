@@ -10,10 +10,10 @@
  *
  */
 
-namespace app\components\parser\news;
+namespace app\components\core;
 
-use fingli\ParserCore\ParserCore;
-use app\components\parser\ParserInterface;
+use \fingli\ParserCore\ParserCore;
+use \app\components\parser\ParserInterface;
 
 class ParserCoreDebug extends ParserCore implements ParserInterface
 {
