@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.0';
+    private const VERSION = '1.0.1';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -486,7 +486,7 @@ class ParserCore
 
         if (empty($listPageData))
         {
-            throw new Exception('Не удалось получить витрину');
+            throw new Exception('Не удалось получить контент витрины');
         }
 
 
@@ -2165,6 +2165,14 @@ class ParserCore
             $responseInfo       = $Curl->getInfo();
             $this->responseInfo = $responseInfo;
 
+            if (static::DEBUG >= 3)
+            {
+                print_r($responseInfo);
+                //                print_r($responseHtml);
+                //                echo strlen($responseHtml);
+                //                die;
+            }
+
             // пост обработка
             if (!empty($responseHtml))
             {
@@ -2213,20 +2221,21 @@ class ParserCore
                 }
                 else
                 {
-                    // что-то пошло не так
                     return null;
                 }
             }
         }
 
+        //        echo strlen($responseHtml);
+        //        die;
         // вырезаем теги <script> <style>, которые не вырезаются через strip_tags
 
-        if ($this->currentElement != 'rss')
+        //        if ($this->currentElement != 'rss' && strlen($responseHtml) < 1000000)
+        if ($this->currentElement != 'rss' && $this->currentElement != 'list')
         {
             $responseHtml = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $responseHtml);
             $responseHtml = preg_replace('#<style(.*?)>(.*?)</style>#is', '', $responseHtml);
         }
-
 
         if (is_string($responseHtml) && !empty($responseHtml))
         {

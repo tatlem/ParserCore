@@ -2,6 +2,11 @@
 // крутые html примеры для теста https://www.htmhell.dev/1/
 
 return [
+    'https://test/template' => <<<'HTML'
+
+
+HTML,
+
     'https://test/incorrect1.xml' => <<<'HTML'
 
 
