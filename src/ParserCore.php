@@ -976,7 +976,7 @@ class ParserCore
                                 // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
                                 if (
                                     (strlen($data['text']) <= 4 && !preg_match('/[^\s.,\?\!]+/', $data['text'])) ||
-                                    empty($data['text'])
+                                    empty(trim($data['text']))
                                 )
                                 {
                                     break;
@@ -1213,8 +1213,7 @@ class ParserCore
         return $item;
     }
 
-    // @feature вырезание игнорируемых CSS-селекторов из ignore-selectors
-    // включая element-image, element-title, element-description. Если они ...
+    // вырезание игнорируемых CSS-селекторов из ignore-selectors
     protected function getHtmlWithoutIgnoredSelectors(string $html)
     : string {
         $selectors = $this->config['element']['ignore-selectors'] ?? '';
@@ -2208,8 +2207,6 @@ class ParserCore
             {
                 print_r($responseInfo);
                 print_r($responseHtml);
-                //                echo strlen($responseHtml);
-                //                die;
             }
 
             // пост обработка
