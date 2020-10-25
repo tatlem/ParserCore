@@ -1975,6 +1975,8 @@ class ParserCore
     function getElementsDataFromHtml(string $html, string $containerSelector, string $elementSelector, string $get = 'html'
     )
     : array {
+//        echo $html;
+        //        die;
         $this->showLog('getElementsDataFromHtml($html, "' . $containerSelector . '", "' . $elementSelector . '" ):', 'talkative');
 
         $fullSelector = trim($containerSelector . ' ' . $elementSelector);
@@ -2000,6 +2002,10 @@ class ParserCore
         $attribute = $this->getAttrFromSelector($elementSelector);
         $elements  = $Crawler->filter($fullSelector);
 
+
+        //        print_r($attribute);
+        //        print_r($elements);
+        //        die;
 
         if ($elements)
         {
@@ -2201,7 +2207,7 @@ class ParserCore
             if (static::DEBUG >= 3)
             {
                 print_r($responseInfo);
-                //                print_r($responseHtml);
+                print_r($responseHtml);
                 //                echo strlen($responseHtml);
                 //                die;
             }
