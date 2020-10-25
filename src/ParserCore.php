@@ -1975,7 +1975,7 @@ class ParserCore
     function getElementsDataFromHtml(string $html, string $containerSelector, string $elementSelector, string $get = 'html'
     )
     : array {
-//        echo $html;
+        //        echo $html;
         //        die;
         $this->showLog('getElementsDataFromHtml($html, "' . $containerSelector . '", "' . $elementSelector . '" ):', 'talkative');
 
@@ -2204,7 +2204,7 @@ class ParserCore
             $responseInfo       = $Curl->getInfo();
             $this->responseInfo = $responseInfo;
 
-            if (static::DEBUG >= 3)
+            if ((int)static::DEBUG >= 3)
             {
                 print_r($responseInfo);
                 print_r($responseHtml);
