@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.1';
+    private const VERSION = '1.0.2';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -901,6 +901,15 @@ class ParserCore
                 // add data to post
                 if (!empty($cardItem['data']))
                 {
+                    $i = 1;
+
+                    $images = [];
+
+                    if (!empty($image))
+                    {
+                        array_push($images, $image);
+                    }
+
                     foreach ($cardItem['data'] as $data)
                     {
                         switch ($data['type'])
@@ -913,6 +922,12 @@ class ParserCore
                                     if (!$level)
                                     {
                                         $level = 1;
+                                    }
+
+                                    // проверяем что нет дубля с названием
+                                    if ($data['text'] == $title && $i == 1)
+                                    {
+                                        break;
                                     }
 
                                     $Post->addItem(
@@ -967,6 +982,12 @@ class ParserCore
                                     break;
                                 }
 
+                                // пропускаем текст, если он такой же как дескрипшен
+                                if ($data['text'] === $description)
+                                {
+                                    break;
+                                }
+
                                 $Post->addItem(
                                     new NewsPostItem(
                                         NewsPostItem::TYPE_TEXT,
@@ -996,6 +1017,16 @@ class ParserCore
                             case 'image':
                                 if (!empty($data['url']))
                                 {
+                                    // проверяем на дубли
+                                    if (in_array($data['url'], $images))
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        array_push($images, $data['url']);
+                                    }
+
                                     $Post->addItem(
                                         new NewsPostItem(
                                             NewsPostItem::TYPE_IMAGE,
@@ -1008,6 +1039,8 @@ class ParserCore
                                 }
                                 break;
                         }
+
+                        $i++;
                     }
                 }
 

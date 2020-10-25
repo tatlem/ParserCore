@@ -25,7 +25,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
     protected const EMULATE_MODE = true;
     // включить дебаг-режим (только для разработки)
-    protected const DEBUG = 1;
+    protected const DEBUG = 0;
     // дебаг-режим  (только для разработки) [core, default]
     //    protected const DEBUG_MODE = 'talkative';
     protected const DEBUG_MODE = 'default';
@@ -36,7 +36,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         // 2 - rss emulate
         // 3 - CORE_ClassicalmusicnewsParsingRu_Parser
         // 4 - RSS https://www.riatomsk.ru/rss.xml
-        $configType = 2;
+        $configType = 4;
 
         if ($configType == 1)
         {
@@ -91,25 +91,25 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css селектор для элемента витрины (относительно контейнера)
                     // (обязательный)
-                    'element'             => 'a',
+                    'element'             => '.item',
 
                     // ** дальнейшие css-селекторы указываются относительно element
 
                     // css селектор для ссылки на элемент !должен содержать конечный аттрибут href!
                     // (обязательный + должен быть обязательный атрибут, где хранится ссылка)
-                    'element-link'        => '[href]',
+                    'element-link'        => 'a[href]',
 
                     // css селектор для названия элемента
                     // (опционально)
-                    'element-title'       => '_text',
+                    'element-title'       => 'a',
 
                     // css селектор для описания элемента
                     // (опционально)
-                    'element-description' => '',
+                    'element-description' => '.desc',
 
                     // css селектор !должен содержать конечный аттрибут src! для картинки элемента
                     // (опционально)
-                    'element-image'       => '',
+                    'element-image'       => 'img[src]',
 
                     // css селектор для даты элемента
                     // (опционально)

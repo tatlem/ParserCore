@@ -2,76 +2,38 @@
 // крутые html примеры для теста https://www.htmhell.dev/1/
 
 return [
-    'https://test/template' => <<<'HTML'
+    'https://test/doubles' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
 
 
-HTML,
 
-    'https://test/incorrect1.xml' => <<<'HTML'
+<div id="container">
 
-
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
-<channel>
-<title>Новости</title>
-<link>https://in-news.ru</link>
-<description></description>
-<lastBuildDate>Thu, 22 Oct 2020 17:32:57 +0500</lastBuildDate>
-<ttl>60</ttl>
-<yandex:logo>https://in-news.ru/bitrix/templates/innews_main/images/yandex_normal_logo.png</yandex:logo>
-<yandex:logo type="square">https://in-news.ru/bitrix/templates/innews_main/images/yandex_square_logo.png</yandex:logo>
-
-
-<item>
-	<title>ЭКСКЛЮЗИВ. С 23 октября в Сургуте откроются круглосуточные кабинеты для КТ-исследований</title>
-	<link>https://in-news.ru/news/zdorovie/eksklyuziv-s-23-sentyabrya-v-surgute-otkroyutsya-kruglosutochnye-kabinety-dlya-kt-issledovaniy.html</link>
-	<description>Обследование там смогут пройти горожане с подтвержденным коронавирусом и тех, у кого есть симптомы болезни</description>
-	
-		
-		<enclosure url="https://in-news.ru/upload/iblock/17d/17dee63eb1b03bf25aa52eda47548d9c.jpg" length="36976" type="image/jpeg"/>
-				<category>Здоровье</category>
-				<yandex:full-text>&lt;p&gt;
-	 С 23 октября в Сургуте заработают круглосуточные кабинеты неотложной помощи для больных коронавирусом, и тех, у кого есть симптомы новой инфекции. Там же в случае необходимости можно будет выполнить КТ-исследование легких. На работу 24 на 7 перейдут кабинеты в поликлиниках номер один, два и четыре. Об этом телеканалу «Сургут 24» сообщил главный врач первой ГП&lt;b&gt; Максим Слепов.&lt;/b&gt;&lt;b&gt; «Это будет сделано для того, чтобы разгрузить приемное отделение Сургутской окружной клинической больницы»&lt;/b&gt;, - отметил он. Говоря о причинах такого решения руководитель окружного департамента здравоохранения &lt;b&gt;Алексей Добровольский&lt;/b&gt; отметил повышение эффективности и скорости постановки диагнозов. В случае необходимости госпитализировать пациентов с ковид-19 тоже будут быстрее, потому как весь комплекс исследований для этого уже будет выполнен.
-&lt;/p&gt;
-&lt;p&gt;
-	&lt;b&gt;«Мы сегодня видим не очень большую нагрузку на эти компьютерные томографы в поликлиниках. 30, 25, 40 исследований – это полторы, даже не две смены работы КТ. Но с учетом того, что это неравномерно, это невозможно распланировать от минуты к минуте, от часа к часу, поэтому нам эффективнее перевести их в режим работы 24/7. Неделя, две, три, четыре, я думаю, и вернемся к тому моменту, когда сможем это решение откатить», &lt;/b&gt;– рассказал директор департамента здравоохранения Алексей Добровольский.
-&lt;/p&gt;</yandex:full-text>
-		<pubDate>Thu, 22 Oct 2020 16:40:00 +0500</pubDate>
-</item>
-
-
-</channel>
-</rss>
-
-
+    <div id="text">
+    
+    <h1>дубли</h1>
+    <p>описание дубли</p>
+    <img src="/double.jpg">
+    Оригинальный текст новости
+    
+    <img src="/ava.jpg">
+    <img src="/double.jpg">
+    <h2>дубли</h2>
+    <img src="/double.jpg">
+    <img src="/double2.jpg">
+    <img src="/double.jpg">
+    текст
+    
+    <img src="/double2.jpg">
+    </div>
+</div>
+</body>
+</html>
 
 HTML,
-    'https://test/incorrect2.xml' => <<<'HTML'
 
-<?xml version="1.0"?>
-<rss version="2.0">
-  <channel>
-    <language>ru</language>
-    <title>Братская студия телевидения - новости Братска</title>
-    <description>Новости города Братска и Иркутской области</description>
-    <link>https://bst.bratsk.ru</link>
-    <yandex:logo>https://bst.bratsk.ru/bstlogo.png</yandex:logo>
-    <item>
-      <title>Иркутянин варит сыры с сибирской изюминкой</title>
-      <link>https://bst.bratsk.ru/news/43221</link>
-      <pdalink>https://bst.bratsk.ru/news/43221</pdalink>
-      <pubDate>Fri, 23 Oct 2020 18:45:00 +0800</pubDate>
-      <description>&lt;p&gt;&lt;/p&gt;&lt;p&gt;Его любят и взрослые, и дети. А ещё он полезен для здоровья. Но мало, кто знает, как его создают. Сейчас речь пойдёт о сыре. Иркутянин не только наладил производство ценного продукта, но и использует в своём деле необычные рецепты&lt;/p&gt;
-</description>
-    </item>
-
-
-
-</channel>
-</rss>
-
-
-
-HTML,
 
     'https://test/element-text-before' => <<<'HTML'
 <!DOCTYPE html>
@@ -439,8 +401,14 @@ HTML
 <html>
 <body>
 <div id="container">
-<a href="https://test/news-bolvanka1">bolvan-simple</a>
-<a href="https://test/news-bolvanka-404">bolvan-404</a>
+<div class="item">
+    <div class="desc">описание дубли</div>
+    <a href="https://test/doubles">дубли</a>
+    <img src="/ava.jpg" alt="avava"/>
+</div>
+
+
+
 </div>
 </body>
 </html>
@@ -2149,5 +2117,70 @@ _tmr.push({id: "3174698", type: "pageView", start: (new Date()).getTime()});
 HTML
     ,
 
+    'https://test/incorrect1.xml' => <<<'HTML'
+
+
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
+<channel>
+<title>Новости</title>
+<link>https://in-news.ru</link>
+<description></description>
+<lastBuildDate>Thu, 22 Oct 2020 17:32:57 +0500</lastBuildDate>
+<ttl>60</ttl>
+<yandex:logo>https://in-news.ru/bitrix/templates/innews_main/images/yandex_normal_logo.png</yandex:logo>
+<yandex:logo type="square">https://in-news.ru/bitrix/templates/innews_main/images/yandex_square_logo.png</yandex:logo>
+
+
+<item>
+	<title>ЭКСКЛЮЗИВ. С 23 октября в Сургуте откроются круглосуточные кабинеты для КТ-исследований</title>
+	<link>https://in-news.ru/news/zdorovie/eksklyuziv-s-23-sentyabrya-v-surgute-otkroyutsya-kruglosutochnye-kabinety-dlya-kt-issledovaniy.html</link>
+	<description>Обследование там смогут пройти горожане с подтвержденным коронавирусом и тех, у кого есть симптомы болезни</description>
+	
+		
+		<enclosure url="https://in-news.ru/upload/iblock/17d/17dee63eb1b03bf25aa52eda47548d9c.jpg" length="36976" type="image/jpeg"/>
+				<category>Здоровье</category>
+				<yandex:full-text>&lt;p&gt;
+	 С 23 октября в Сургуте заработают круглосуточные кабинеты неотложной помощи для больных коронавирусом, и тех, у кого есть симптомы новой инфекции. Там же в случае необходимости можно будет выполнить КТ-исследование легких. На работу 24 на 7 перейдут кабинеты в поликлиниках номер один, два и четыре. Об этом телеканалу «Сургут 24» сообщил главный врач первой ГП&lt;b&gt; Максим Слепов.&lt;/b&gt;&lt;b&gt; «Это будет сделано для того, чтобы разгрузить приемное отделение Сургутской окружной клинической больницы»&lt;/b&gt;, - отметил он. Говоря о причинах такого решения руководитель окружного департамента здравоохранения &lt;b&gt;Алексей Добровольский&lt;/b&gt; отметил повышение эффективности и скорости постановки диагнозов. В случае необходимости госпитализировать пациентов с ковид-19 тоже будут быстрее, потому как весь комплекс исследований для этого уже будет выполнен.
+&lt;/p&gt;
+&lt;p&gt;
+	&lt;b&gt;«Мы сегодня видим не очень большую нагрузку на эти компьютерные томографы в поликлиниках. 30, 25, 40 исследований – это полторы, даже не две смены работы КТ. Но с учетом того, что это неравномерно, это невозможно распланировать от минуты к минуте, от часа к часу, поэтому нам эффективнее перевести их в режим работы 24/7. Неделя, две, три, четыре, я думаю, и вернемся к тому моменту, когда сможем это решение откатить», &lt;/b&gt;– рассказал директор департамента здравоохранения Алексей Добровольский.
+&lt;/p&gt;</yandex:full-text>
+		<pubDate>Thu, 22 Oct 2020 16:40:00 +0500</pubDate>
+</item>
+
+
+</channel>
+</rss>
+
+
+
+HTML,
+    'https://test/incorrect2.xml' => <<<'HTML'
+
+<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+    <language>ru</language>
+    <title>Братская студия телевидения - новости Братска</title>
+    <description>Новости города Братска и Иркутской области</description>
+    <link>https://bst.bratsk.ru</link>
+    <yandex:logo>https://bst.bratsk.ru/bstlogo.png</yandex:logo>
+    <item>
+      <title>Иркутянин варит сыры с сибирской изюминкой</title>
+      <link>https://bst.bratsk.ru/news/43221</link>
+      <pdalink>https://bst.bratsk.ru/news/43221</pdalink>
+      <pubDate>Fri, 23 Oct 2020 18:45:00 +0800</pubDate>
+      <description>&lt;p&gt;&lt;/p&gt;&lt;p&gt;Его любят и взрослые, и дети. А ещё он полезен для здоровья. Но мало, кто знает, как его создают. Сейчас речь пойдёт о сыре. Иркутянин не только наладил производство ценного продукта, но и использует в своём деле необычные рецепты&lt;/p&gt;
+</description>
+    </item>
+
+
+
+</channel>
+</rss>
+
+
+
+HTML,
 
 ];
