@@ -2,6 +2,30 @@
 // крутые html примеры для теста https://www.htmhell.dev/1/
 
 return [
+    'https://test/image-from-background' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+
+
+
+<div id="container">
+
+    <div id="text">
+    
+    <img src="/normal.jpg" />
+    <div style="background-image: url(/back1.jpg)"></div>
+    <div style="background-image: url(https://ya.ru/back2.jpg)"></div>
+    <div style="background: red url('/back3.jpg')"></div>
+    <img src="/normal2.jpg" style="background-image: url(/not-normal.jpg)" />
+    
+    </div>
+</div>
+</body>
+</html>
+
+HTML,
+
     'https://test/doubles' => <<<'HTML'
 <!DOCTYPE html>
 <html>

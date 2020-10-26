@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.2';
+    private const VERSION = '1.0.3';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -128,6 +128,8 @@ class ParserCore
     private string $currentElement = 'none';
     // здесь хранится полный html из ->getPage
     private string $currentPageFullHtml;
+    // переменная для хранения режима дебаг
+    private int $debug = 0;
     // протокол и домен
     protected string $siteUrl = '';
     // режим работы парсера
@@ -330,8 +332,6 @@ class ParserCore
 
     public function __construct()
     {
-        //        print_r($this->importClasses['NewsPostItem']);
-
         if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
         {
             static::showLog('--- Внимание! Включен режим эмуляции http запросов. Реальные запросы не делаются ---', 'warning', true, true);
@@ -346,6 +346,7 @@ class ParserCore
         $this->dateFormatRss      = $this->getDateFormatRss();
         $this->TimeParser         = $this->getTimeParser();
         $this->pauseBeforeRequest = $this->getPauseBeforeRequest();
+        $this->debug              = $this->getDebug();
 
         // проверка переменных
 
@@ -648,7 +649,7 @@ class ParserCore
             throw new Exception('Не удалось распарсить карточки. (Пустой результат $itemsParsed)');
         }
 
-        if ((int)static::DEBUG >= 3)
+        if ($this->debug >= 3)
         {
             echo "------ itemsParsed (before normalize) -----\033[44m" . PHP_EOL;
             print_r($itemsParsed);
@@ -662,7 +663,7 @@ class ParserCore
         $itemsParsed = $this->normalizeItems($itemsParsed);
         static::showLog('Сделано');
 
-        if ((int)static::DEBUG >= 3)
+        if ($this->debug >= 3)
         {
             echo "------ itemsParsed (normalized) -----\033[44m" . PHP_EOL;
             print_r($itemsParsed);
@@ -1113,8 +1114,6 @@ class ParserCore
         $item                 = [];
         $html                 = $this->getPage($url);
 
-        //        echo $html;
-
         if (!empty($html))
         {
             $elDescription = '';
@@ -1204,7 +1203,7 @@ class ParserCore
                 static::showLog('-- Не найдены данные из контейнера карточки ' . $this->config['element']['container'] . '', 'warning');
             }
         }
-        elseif ((int)static::DEBUG >= 1)
+        elseif ($this->debug >= 1)
         {
             static::showLog('Страница вернула пустой результат', 'warning');
         }
@@ -1376,7 +1375,7 @@ class ParserCore
      */
     protected function getItemData(string $html)
     : array {
-        if ((int)static::DEBUG >= 2)
+        if ($this->debug >= 2)
         {
             echo "------ RAW HTML getItemData() -----\033[44m" . PHP_EOL;
             echo $html;
@@ -1419,7 +1418,6 @@ class ParserCore
                 case '#text':
                     if (!empty($val))
                     {
-                        //                        echo '{' . $val . '}' . PHP_EOL;
                         $data = [
                             'type' => self::TYPE_TEXT,
                             'text' => $val,
@@ -1650,7 +1648,7 @@ class ParserCore
     : ?string {
         if (empty($date))
         {
-            if ((int)static::DEBUG >= 1)
+            if ($this->debug >= 1)
             {
                 static::showLog('Дата пустая!', 'warning');
             }
@@ -1829,8 +1827,6 @@ class ParserCore
             }
         }
 
-        //        echo $date;
-
 
         // сложная дата
         preg_match('/\d{2}:\d{2}/', $date, $matches);
@@ -1873,7 +1869,6 @@ class ParserCore
                     return DateTimeImmutable::createFromFormat($fullDateFormatDate, $fullDateStr, $timeZone);
                 }
             }
-            //            echo 'есть полная дата!';
         }
 
         //        echo '$timeStr = ' . $timeStr . PHP_EOL;
@@ -1974,8 +1969,6 @@ class ParserCore
     function getElementsDataFromHtml(string $html, string $containerSelector, string $elementSelector, string $get = 'html'
     )
     : array {
-        //        echo $html;
-        //        die;
         $this->showLog('getElementsDataFromHtml($html, "' . $containerSelector . '", "' . $elementSelector . '" ):', 'talkative');
 
         $fullSelector = trim($containerSelector . ' ' . $elementSelector);
@@ -1984,10 +1977,6 @@ class ParserCore
         {
             throw new Exception('Не установлен CSS-селектор!');
         }
-
-        //        $html = '<meta http-equiv="content-type" content="text/html; charset=utf-8">'
-        //        $html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"></head><body>' . $html . '</body></html>';
-
 
         // решаем проблемы с кодировкой
         if ($this->currentCharset != 'utf-8')
@@ -2001,10 +1990,6 @@ class ParserCore
         $attribute = $this->getAttrFromSelector($elementSelector);
         $elements  = $Crawler->filter($fullSelector);
 
-
-        //        print_r($attribute);
-        //        print_r($elements);
-        //        die;
 
         if ($elements)
         {
@@ -2034,7 +2019,7 @@ class ParserCore
     : array {
         $this->showLog('getElementsDataFromRss($html, "' . $elementSelector . '", "' . $get . '", "' . $limit . '", Crawler "' . (bool)$Crawler . '" ):', 'talkative');
 
-        if ((int)static::DEBUG >= 2 && !empty($xml))
+        if ($this->debug >= 2 && !empty($xml))
         {
             echo "------ RAW XML  -----\033[44m" . PHP_EOL;
             echo $xml;
@@ -2065,8 +2050,6 @@ class ParserCore
         $Converter       = new CssSelectorConverter(false);
         $attribute       = $this->getAttrFromSelector($elementSelector);
         $elementSelector = $Converter->toXPath($elementSelector);
-
-        //        echo $elementSelector;
 
         if ($limit > 0)
         {
@@ -2174,7 +2157,7 @@ class ParserCore
             // чуть помедленнее, кони, чуть помедленнее...
             if ($this->pauseBeforeRequest > 0)
             {
-                if ((int)static::DEBUG >= 1)
+                if ($this->debug >= 1)
                 {
                     static::showLog('пауза ' . $this->pauseBeforeRequest . ' сек...');
                 }
@@ -2203,7 +2186,7 @@ class ParserCore
             $responseInfo       = $Curl->getInfo();
             $this->responseInfo = $responseInfo;
 
-            if ((int)static::DEBUG >= 3)
+            if ($this->debug >= 3)
             {
                 print_r($responseInfo);
                 print_r($responseHtml);
@@ -2262,11 +2245,7 @@ class ParserCore
             }
         }
 
-        //        echo strlen($responseHtml);
-        //        die;
         // вырезаем теги <script> <style>, которые не вырезаются через strip_tags
-
-        //        if ($this->currentElement != 'rss' && strlen($responseHtml) < 1000000)
         if ($this->currentElement != 'rss' && $this->currentElement != 'list')
         {
             $responseHtml = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $responseHtml);
@@ -2295,10 +2274,7 @@ class ParserCore
         // <rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
         $responseHtml = preg_replace('/<rss[\s]?[^>]*>/', '<rss version="2.0">', $responseHtml);
 
-        //        echo $responseHtml;
-        //        die;
-
-        if ((int)static::DEBUG >= 1 && 'проверка RSS на корректность')
+        if ($this->debug >= 1 && 'проверка RSS на корректность')
         {
             libxml_use_internal_errors(true);
             try
@@ -2330,6 +2306,13 @@ class ParserCore
     {
         // @author https://github.com/Metallizzer/TimeParser
         return new TimeParser('russian');
+    }
+
+    // @todo переделать
+    private function getDebug()
+    {
+        // CORE_PARSER_DEBUG_EXTERNAL - определяется там где нужно "перебить" режим установленный в парсере
+        return defined('CORE_PARSER_DEBUG_EXTERNAL') ? CORE_PARSER_DEBUG_EXTERNAL : (int)static::DEBUG;
     }
 
     private function getPauseBeforeRequest()
@@ -2375,7 +2358,7 @@ class ParserCore
         $parserLimit = $this->config['itemsLimit'] ?? null;
         $realLimit   = 10;
 
-        if ((int)static::DEBUG >= 1)
+        if ($this->debug >= 1)
         {
             if (!empty($parserLimit))
             {
@@ -2386,6 +2369,15 @@ class ParserCore
         {
             $realLimit = $coreLimit;
         }
+
+        // @todo передать сюда лимит из вне (из чекера)
+        // если включен режим внешнего управление дебагом, то
+        // считаем что также управляется количество
+        //        if (defined('CORE_PARSER_DEBUG_EXTERNAL'))
+        //        {
+        //            //            $realLimit =
+        //            var_dump($this->itemsLimit);
+        //        }
 
 
         return $realLimit;
@@ -2526,7 +2518,8 @@ class ParserCore
     private
     function showLog(string $message, string $mode = 'default', $break = true
     ) {
-        $debug = (int)static::DEBUG;
+        $debug = $this->debug;
+
         if ($debug > 0)
         {
             $maxLen    = 1000;
