@@ -129,7 +129,7 @@ class ParserCore
     // здесь хранится полный html из ->getPage
     private string $currentPageFullHtml;
     // переменная для хранения режима дебаг
-    private int $debug = 0;
+    private int $debug;
     // протокол и домен
     protected string $siteUrl = '';
     // режим работы парсера
@@ -338,6 +338,7 @@ class ParserCore
         }
 
         // инициализация переменных
+        $this->debug              = $this->getDebug();
         $this->siteUrl            = $this->getSiteUrl();
         $this->mode               = $this->getMode();
         $this->itemsLimit         = $this->getItemsLimit();
@@ -346,7 +347,6 @@ class ParserCore
         $this->dateFormatRss      = $this->getDateFormatRss();
         $this->TimeParser         = $this->getTimeParser();
         $this->pauseBeforeRequest = $this->getPauseBeforeRequest();
-        $this->debug              = $this->getDebug();
 
         // проверка переменных
 
@@ -527,8 +527,6 @@ class ParserCore
             {
                 $elTitleData = current($this->getElementsDataFromRss('', $this->config['rss']['element-title'], 'text', -1, $elementData));
                 $elLinkData  = current($this->getElementsDataFromRss('', $this->config['rss']['element-link'], 'text', -1, $elementData));
-
-                //                var_dump($elLinkData);
 
                 if (!empty($this->config['rss']['element-description']))
                 {
@@ -1328,8 +1326,6 @@ class ParserCore
                 }
             }
 
-            //            var_dump($htmlPrepended);
-
             $html = $htmlPrepended . $html;
         }
 
@@ -1490,8 +1486,6 @@ class ParserCore
                     $youtubeId = '';
                     $url       = $this->getUrl($element->getAttribute('href'));
 
-                    //                        var_dump($url);
-
                     if (empty($url))
                     {
                         break;
@@ -1534,7 +1528,6 @@ class ParserCore
                     {
                         // если в тексте ссылки содержатся allowed tags
                         // нужно их обработать
-                        //                            var_dump($element->childNodes);
                         if ($element->childNodes->length >= 2)
                         {
                             $nodeText = '';
@@ -2060,8 +2053,6 @@ class ParserCore
             $elements = $Crawler->filterXPath($elementSelector);
         }
 
-        //        var_dump($elements);
-
         if ($elements)
         {
             $elements->each(function (Crawler $element, $i) use (&$data, $get, $attribute) {
@@ -2225,7 +2216,6 @@ class ParserCore
 
                         $charset              = strtolower($charset);
                         $this->currentCharset = $charset;
-                        //                        var_dump($charset);
 
 
                         // делаем перекодировку
@@ -2358,7 +2348,7 @@ class ParserCore
         $parserLimit = $this->config['itemsLimit'] ?? null;
         $realLimit   = 10;
 
-        if ($this->debug >= 1)
+        if (isset($this->debug) && $this->debug >= 1)
         {
             if (!empty($parserLimit))
             {
@@ -2373,11 +2363,6 @@ class ParserCore
         // @todo передать сюда лимит из вне (из чекера)
         // если включен режим внешнего управление дебагом, то
         // считаем что также управляется количество
-        //        if (defined('CORE_PARSER_DEBUG_EXTERNAL'))
-        //        {
-        //            //            $realLimit =
-        //            var_dump($this->itemsLimit);
-        //        }
 
 
         return $realLimit;

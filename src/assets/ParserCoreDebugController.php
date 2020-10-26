@@ -7,7 +7,7 @@ use app\components\Helper;
 use yii\console\Controller;
 
 // отключаем режим дебага у всех парсеров
-define('CORE_PARSER_DEBUG_EXTERNAL', 1);
+//define('CORE_PARSER_DEBUG_EXTERNAL', 1);
 
 class ParserCoreDebugController extends Controller
 {
