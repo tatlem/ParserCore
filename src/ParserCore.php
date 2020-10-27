@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.1.0';
+    private const VERSION = '1.1.1';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -2148,6 +2148,84 @@ class ParserCore
         return $url;
     }
 
+    private function getParserName()
+    : ?string
+    {
+        $classParts = explode('\\', get_class($this));
+
+        if (!empty($classParts))
+        {
+            return end($classParts);
+        }
+    }
+
+    /**
+     * url => filename
+     *
+     * Parameters:
+     *     $string - The string to sanitize.
+     *     $force_lowercase - Force the string to lowercase?
+     *     $anal - If set to *true*, will remove all non-alphanumeric characters.
+     */
+    function convertUrlToFileName($string, $force_lowercase = true, $anal = false)
+    {
+        $strip = [
+            "~",
+            "`",
+            "!",
+            "@",
+            "#",
+            "$",
+            "%",
+            "^",
+            "&",
+            "*",
+            "(",
+            ")",
+            "_",
+            "=",
+            "+",
+            "[",
+            "{",
+            "]",
+            "}",
+            "\\",
+            "|",
+            ";",
+            ":",
+            "\"",
+            "'",
+            "&#8216;",
+            "&#8217;",
+            "&#8220;",
+            "&#8221;",
+            "&#8211;",
+            "&#8212;",
+            "â€”",
+            "â€“",
+            ",",
+            "<",
+            ".",
+            ">",
+            "/",
+            "?"
+        ];
+        $clean = trim(str_replace($strip, "_", strip_tags($string)));
+        $clean = preg_replace('/\s+/', "-", $clean);
+
+        //        $clean = ($anal) ? preg_replace("/[^a-zA-Z0-9\.\-]/", "", $clean) : $clean;
+
+        return ($force_lowercase)
+            ?
+            (function_exists('mb_strtolower'))
+                ?
+                mb_strtolower($clean, 'UTF-8')
+                :
+                strtolower($clean)
+            :
+            $clean;
+    }
+
     /**
      * Запрос страницы URL и возврат HTML
      *
@@ -2215,6 +2293,25 @@ class ParserCore
             {
                 print_r($responseInfo);
                 print_r($responseHtml);
+
+                if ('записываем в /utils/pages/Parser/url.html')
+                {
+                    $pagesDir   = 'utils/pages';
+                    $parserName = $this->getParserName();
+                    $dir        = dirname(getcwd() . '/../' . $pagesDir) . '/pages/';
+                    $parserDir  = $dir . $parserName;
+                    $fileName   = $this->convertUrlToFileName($url);
+
+                    if (!is_dir($parserDir))
+                    {
+                        mkdir($parserDir);
+                    }
+
+                    $file = $parserDir . '/' . $fileName . '.html';
+                    //                    echo $file;
+                    static::showLog('Записываем контент страницы в ' . $pagesDir . '/' . $parserName . '/' . $fileName . '.html');
+                    var_dump(file_put_contents($file, $responseHtml));
+                }
             }
 
             // пост обработка
@@ -2225,6 +2322,10 @@ class ParserCore
                 {
                     if ($this->currentElement == 'rss')
                     {
+                        // решаем проблемы кодировки
+                        //                        $responseHtml = iconv("UTF-8", "UTF-8//IGNORE", $responseHtml);
+
+                        // и некоректных заголовков, неймспейсов
                         $responseHtml = $this->getCorrectedXml($responseHtml);
                     }
                     else
@@ -2294,9 +2395,15 @@ class ParserCore
         // ставим первым <?xml version="1.0"...
         $responseHtml = preg_replace('/\s*<\?xml\s.*\?>/', '<?xml version="1.0"?>', $responseHtml);
 
+
         // убираем всякую чушь из тега rss
         // <rss version="2.0" xmlns="http://backend.userland.com/rss2" xmlns:yandex="http://news.yandex.ru">
-        $responseHtml = preg_replace('/<rss[\s]?[^>]*>/', '<rss version="2.0">', $responseHtml);
+        $responseHtml = preg_replace('/<rss\s+[^>]*>|<rss>/', '<rss version="2.0">', $responseHtml);
+
+        if ($this->debug >= 3)
+        {
+            static::showLog('Начало XML после корректировки: ' . substr($responseHtml, 0, 1000));
+        }
 
         if ($this->debug >= 1 && 'проверка RSS на корректность')
         {
