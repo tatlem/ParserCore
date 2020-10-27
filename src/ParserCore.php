@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.0.4';
+    private const VERSION = '1.1.0';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -332,11 +332,6 @@ class ParserCore
 
     public function __construct()
     {
-        if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
-        {
-            static::showLog('--- Внимание! Включен режим эмуляции http запросов. Реальные запросы не делаются ---', 'warning', true, true);
-        }
-
         // инициализация переменных
         $this->debug              = $this->getDebug();
         $this->siteUrl            = $this->getSiteUrl();
@@ -442,6 +437,11 @@ class ParserCore
                 throw new Exception('Несовместимая версия ядра. Обновите, пожалуйста, зависимости через composer update. ' . PHP_EOL . '
                     Требуется ядро ParserCore' . $parserCoreVer[0]);
             }
+        }
+
+        if (defined('static::EMULATE_MODE') && static::EMULATE_MODE)
+        {
+            static::showLog('--- Внимание! Включен режим эмуляции http запросов. Реальные запросы не делаются ---', 'warning', true, true);
         }
     }
 
@@ -1957,6 +1957,32 @@ class ParserCore
         return $date;
     }
 
+    /**
+     * Геттер, который достает из строки все, что похоже на урл (относительный или абсолютный)
+     * например: background-image: url(/back1.jpg) => /back1.jpg
+     *
+     * @param string $attrVal
+     *
+     * @return string|null
+     */
+    protected function getUrlFromStyleAttr(string $attrVal)
+    : string {
+        if (empty($attrVal))
+        {
+            return '';
+        }
+
+        preg_match_all('~\bbackground(-image)?\s*:(.*?)\(\s*(\'|")?(?<image>.*?)\3?\s*\)~i', $attrVal, $matches);
+        $images = $matches['image'];
+
+        if (!empty($images[0]))
+        {
+            return $images[0];
+        }
+
+        return '';
+    }
+
     // геттер элементов HTML
     protected
     function getElementsDataFromHtml(string $html, string $containerSelector, string $elementSelector, string $get = 'html'
@@ -1983,13 +2009,21 @@ class ParserCore
         $attribute = $this->getAttrFromSelector($elementSelector);
         $elements  = $Crawler->filter($fullSelector);
 
-
         if ($elements)
         {
             $elements->each(function (Crawler $element, $i) use (&$data, $get, $attribute) {
                 if (!empty($attribute))
                 {
-                    $data[] = $element->attr($attribute);
+                    // если запрашивается style, то ищем ссылку
+                    if ($attribute == 'style')
+                    {
+                        $attrVal = $element->attr($attribute);
+                        $data[]  = $this->getUrlFromStyleAttr($attrVal);
+                    }
+                    else
+                    {
+                        $data[] = $element->attr($attribute);
+                    }
                 }
                 elseif ($get == 'html')
                 {

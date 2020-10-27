@@ -14,9 +14,11 @@ return [
     <div id="text">
     
     <img src="/normal.jpg" />
-    <div style="background-image: url(/back1.jpg)"></div>
-    <div style="background-image: url(https://ya.ru/back2.jpg)"></div>
-    <div style="background: red url('/back3.jpg')"></div>
+    <div class="img"  style="background-image: url( /multi1.jpg ), url('/multi2.jpg')"></div>
+    <div class="img"  style="background-image: url( /back1.jpg )"></div>
+    <div class="img" style="background-image: url(https://ya.ru/back2.jpg); color: red"></div>
+    <div class="img" style="background: red url('/back3.jpg') no-repeat"></div>
+    <div class="img" style="background: red url('https://ya.ru/back3.jpg') no-repeat"></div>
     <img src="/normal2.jpg" style="background-image: url(/not-normal.jpg)" />
     
     </div>
@@ -426,6 +428,11 @@ HTML
 <body>
 <div id="container">
 <div class="item">
+    <div class="desc">картинки из бэка</div>
+    <a href="https://test/image-from-background">картинки из бэка</a>
+    <img1 src="/ava.jpg" alt="avava"/>
+</div>
+<div class="item1">
     <div class="desc">описание дубли</div>
     <a href="https://test/doubles">дубли</a>
     <img src="/ava.jpg" alt="avava"/>
