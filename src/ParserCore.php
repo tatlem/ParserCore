@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.1.1';
+    private const VERSION = '1.1.2';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -90,6 +90,9 @@ class ParserCore
     private const MAX_DESCRIPTION_LENGTH = 200;
     // лимит на кол-во элементов
     protected int $itemsLimit = self::MAX_ITEMS;
+    // @todo
+    // лимит передаваемый из вне, когда определена конста CORE_PARSER_DEBUG_EXTERNAL
+    //    public int $itemsLimitChecker;
     // хранение текущей кодировки сайта
     protected string $currentCharset;
     // инфа о запросе
@@ -2501,9 +2504,12 @@ class ParserCore
             $realLimit = $coreLimit;
         }
 
-        // @todo передать сюда лимит из вне (из чекера)
-        // если включен режим внешнего управление дебагом, то
-        // считаем что также управляется количество
+        // если включен режим внешнего управление дебагом CORE_PARSER_DEBUG_EXTERNAL, то
+        // считаем что также лимит = 1
+        if (defined('CORE_PARSER_DEBUG_EXTERNAL'))
+        {
+            $realLimit = 1;
+        }
 
 
         return $realLimit;
