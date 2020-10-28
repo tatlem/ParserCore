@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.2.1';
+    private const VERSION = '1.2.2';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -2405,10 +2405,10 @@ class ParserCore
                         $charset    = '';
                         $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
 
-
                         if (strpos($charsetRaw, 'charset=') !== false)
                         {
                             $charset = str_replace("text/html; charset=", "", $charsetRaw);
+                            $charset = str_replace("text/html;charset=", "", $charsetRaw);
                         }
                         else
                         {
