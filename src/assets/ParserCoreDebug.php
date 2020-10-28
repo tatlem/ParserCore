@@ -31,7 +31,8 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
     protected const EMULATE_MODE = false;
     // запрос на определенный урл (если включен, то отключать эмулятор)
-    public $certainUrlCheck = 'https://news.sarbc.ru/main/2020/10/27/253414.html';
+//    public $certainUrlCheck = 'https://sputnik-ossetia.ru/photo/20201027/11341207/Rossiyskie-voennye-mediki-razvorachivayut-kovid-gospital-v-Tskhinvale---foto.html';
+    public $certainUrlCheck = 'https://sputnik-ossetia.ru/spravka/20201027/9482275/28-oktyabrya-kakoy-segodnya-prazdnik-sobytiya-iz-kalendarya.html';
 
     public function __construct()
     {
@@ -559,17 +560,14 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'mode'    => 'rss',
 
                 // максимальное количество новостей, берушихся с витрины
-                // ИСПОЛЬЗУЕТСЯ ТОЛЬКО В РЕЖИМЕ DEBUG
-                // в остальных случаях жестко задается ядром
-                //
-                // не забывайте отключать лимит при сдаче парсера!
-                //                        'itemsLimit' => 1,
+                // (опционально)
+                //            'itemsLimit' => 1,
 
                 // настройки сайта
                 'site'    => [
                     // протокол и домен
                     // (обязательный)
-                    'url'         => 'http://www.sarbc.ru',
+                    'url'         => 'https://sputnik-ossetia.ru',
 
                     // использовать юзер-агенты в http запросах.
                     // (опционально)
@@ -581,7 +579,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // узнать UTC и прописать его в формате +XX00
                     // Например, Москва: '+0300', Владивосток: '+1000'
                     // (опционально)
-                    'time_zone'   => '+0400',
+                    'time_zone'   => '+0300',
 
                     // формат даты для HTML витрины и карточки
                     // (см. https://www.php.net/manual/ru/datetime.format.php)
@@ -596,41 +594,36 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // формат даты в RSS
                     // (указывать только если он отличается от стандартного D, d M Y H:i:s O!)
                     //                'date_format_rss' => 'D, d M Y H:i:s O',
-
-                    // пауза между запросами в секундах (включается только, если сайт начинает блокировку)
-                    //                'pause'       => 0,
                 ],
 
                 // настройки витрины (режим RSS)
                 'rss'     => [
                     // относительный URL где находится RSS
                     // (обязательный)
-                    'url'                 => '/rss/data-utf/main.rss',
+                    'url'                 => '/export/rss2/archive/index.xml',
 
                     // css селектор для элемента витрины (желательно от корня)
                     // (обязательный)
                     'element'             => 'rss > channel > item',
 
-                    // ** дальнейшие css-селекторы указываются относительно element
-
-                    // css селектор для названия элемента
+                    // css селектор для названия элемента (относительно элемента)
                     // (обязательный)
                     'element-title'       => 'title',
 
-                    // css селектор для ссылки
+                    // css селектор для ссылки (относительно элемента)
                     // (обязательный)
                     'element-link'        => 'link',
 
-                    // css селектор для описания элемента
-                    // (опционально)
+                    // css селектор для описания элемента (относительно элемента)
+                    // (заполняется только, если отсутствует в карточке)
                     'element-description' => 'description',
 
-                    // css селектор для картинки элемента
-                    // (опционально)
+                    // css селектор для картинки элемента (относительно элемента)
+                    // (заполняется только, если отсутствует в карточке)
                     'element-image'       => 'enclosure[url]',
 
-                    // css селектор для даты элемента
-                    // (опционально)
+                    // css селектор для даты элемента (относительно элемента)
+                    // (заполняется только, если отсутствует в карточке)
                     'element-date'        => 'pubDate',
                 ],
 
@@ -639,29 +632,26 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'element' => [
 
                     // css-селектор для контейнера карточки
-                    // (можно несколько через запятую, если есть разные шаблоны новости)
+                    // (все дальнейшие пути строятся относительно этого контейнера)
                     // (обязательный)
-                    'container'           => '.news-page-item',
+                    'container'           => '.l-maincolumn.m-static',
 
-                    // ** дальнейшие css-селекторы указываются относительно container
-
-                    // css-селектор для основного текста * - данные внутри (картинки, ссылки) парсятся автоматически
-                    // (можно несколько через запятую, если есть разные шаблоны новости)
+                    // css-селектор для основного текста
+                    // (для заполнения модели NewsPostItem)
                     // (обязательный)
-                    //                    'element-text'        => '.news-page-content',
-                    'element-text'        => '[itemprop="articleBody"]',
+                    'element-text'        => '.b-article__text',
 
-                    // css-селектор даты создания новости
-                    // (опционально)
+                    // css-селектор для получения даты создания новости
+                    // (заполняется только, если отсутствует в витрине)
                     'element-date'        => '',
 
-                    // css селектор для описания элемента
-                    // (опционально)
+                    // css селектор для описания элемента (относительно элемента)
+                    // (заполняется только, если отсутствует в витрине)
                     'element-description' => '',
 
                     // css селектор для получения картинки
                     // !должен содержать конечный аттрибут src! (например: img.main-image[src])
-                    // (опционально)
+                    // (заполняется только, если отсутствует в витрине)
                     'element-image'       => '',
 
                     // css-селектор для цитаты
@@ -670,13 +660,18 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     'element-quote'       => '',
 
                     // игнорируемые css-селекторы (будут вырезаться из результата)
-                    // (можно несколько через запятую)
+                    // (можно через запятую)
                     // (опционально)
-                    'ignore-selectors'    => '',
+                    //                'ignore-selectors'    => '.l-wrap.m-oh.l-wrapper,b-banner.m-banner-12,b-article__likes.js-likes,b-banner.m-banner-37.m-mb20,.l-sidebar ',
+                    'ignore-selectors'    => '.b-inject.m-inject-min',
 
-                    // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня)
+                    // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
                     // (опционально)
-                    'element-text-before' => '.news_gallery, .news-page-item iframe',
+                    'element-text-before' => '',
+
+                    // css-селекторы которые будут вставлятся в конец текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
+                    // (опционально)
+                    'element-text-after'  => '#gallery',
                 ]
             ];
         }

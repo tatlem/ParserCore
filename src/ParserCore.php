@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.2.3';
+    private const VERSION = '1.3.3';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1434,6 +1434,7 @@ class ParserCore
             $tagName = '';
             $val     = '';
             $text    = '';
+            $imgUrl  = '';
             $data    = [];
 
             $tagName = !empty($element->nodeName) ? $element->nodeName : '#text';
@@ -1471,12 +1472,35 @@ class ParserCore
                     break;
 
                 case 'img':
-                    $data = [
-                        'type' => self::TYPE_IMAGE,
-                        'text' => $element->getAttribute('alt'),
-                        'url'  => $this->getUrl($element->getAttribute('src')),
-                        'tag'  => $tagName,
-                    ];
+                    $imgUrl = $this->getUrl($element->getAttribute('src'));
+
+                    // в src бывают встроенные картинки - фиксим
+                    // нашли встроенное
+                    if (strpos($imgUrl, 'data:image/') === 0)
+                    {
+                        // пробуем взять другой аттрибут (data-src)
+                        $imgUrl2 = $this->getUrl($element->getAttribute('data-src'));
+
+                        if (!empty($imgUrl2))
+                        {
+                            $imgUrl = $imgUrl2;
+                        }
+                        else
+                        {
+                            // @todo сделать поиск на  корректный URL по всему тегу
+                            $imgUrl = '';
+                        }
+                    }
+
+                    if (!empty($imgUrl))
+                    {
+                        $data = [
+                            'type' => self::TYPE_IMAGE,
+                            'text' => $element->getAttribute('alt'),
+                            'url'  => $imgUrl,
+                            'tag'  => $tagName,
+                        ];
+                    }
                     break;
 
                 case 'iframe':
