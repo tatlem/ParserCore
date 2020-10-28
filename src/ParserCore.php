@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.2.0';
+    private const VERSION = '1.2.1';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -2177,7 +2177,43 @@ class ParserCore
     function getUrl(?string $url
     )
     : ?string {
+        if (!empty($url))
+        {
+            $url = $this->encodeRusUrl($url);
+        }
+
         $url = ($url) ? UriResolver::resolve($url, $this->siteUrl) : null;
+
+        return $url;
+    }
+
+    /**
+     * Русские буквы в ссылке
+     *
+     * @param string $url
+     *
+     * @return string
+     */
+    protected function encodeRusUrl(string $url)
+    : string {
+        if (preg_match('/[А-Яа-яЁё]/iu', $url))
+        {
+            preg_match_all('/[А-Яа-яЁё]/iu', $url, $result);
+
+            $search  = [];
+            $replace = [];
+
+            foreach ($result as $item)
+            {
+                foreach ($item as $key => $value)
+                {
+                    $search[$key]  = $value;
+                    $replace[$key] = urlencode($value);
+                }
+            }
+
+            $url = str_replace($search, $replace, $url);
+        }
 
         return $url;
     }
