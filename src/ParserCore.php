@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.2.2';
+    private const VERSION = '1.2.3';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -2379,7 +2379,6 @@ class ParserCore
                     }
 
                     $file = $parserDir . '/' . $fileName . '.html';
-                    //                    echo $file;
                     static::showLog('Записываем контент страницы в ' . $pagesDir . '/' . $parserName . '/' . $fileName . '.html');
                     var_dump(file_put_contents($file, $responseHtml));
                 }
@@ -2391,6 +2390,7 @@ class ParserCore
                 // контент получен
                 if ($responseInfo['http_code'] >= 200 && $responseInfo['http_code'] < 300)
                 {
+                    // RSS
                     if ($this->currentElement == 'rss')
                     {
                         // решаем проблемы кодировки
@@ -2399,17 +2399,32 @@ class ParserCore
                         // и некоректных заголовков, неймспейсов
                         $responseHtml = $this->getCorrectedXml($responseHtml);
                     }
+                    // HTML
                     else
                     {
                         // решаем проблемы кодировки. Все должно быть переведено в utf-8
                         $charset    = '';
                         $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
 
+                        // нашли в заголовках
                         if (strpos($charsetRaw, 'charset=') !== false)
                         {
-                            $charset = str_replace("text/html; charset=", "", $charsetRaw);
-                            $charset = str_replace("text/html;charset=", "", $charsetRaw);
+                            preg_match('~charset=(\'|")?(?<charset>[\w\-]*)(\'|")?~', $charsetRaw, $charsetMatches);
+
+                            // план А
+                            if (!empty($charsetMatches['charset']))
+                            {
+                                $charset = $charsetMatches['charset'];
+                            }
+                            // план В
+                            else
+                            {
+                                $charsetRaw = str_replace("text/html; charset=", "", $charsetRaw);
+                                $charsetRaw = str_replace("text/html;charset=", "", $charsetRaw);
+                                $charset    = $charsetRaw;
+                            }
                         }
+                        // не нашли в заголовках. Ищем в контенте
                         else
                         {
                             preg_match('/charset=([-a-z0-9_]+)/i', $responseHtml, $charsetMatches);

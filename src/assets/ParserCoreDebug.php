@@ -31,7 +31,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
     protected const EMULATE_MODE = false;
     // запрос на определенный урл (если включен, то отключать эмулятор)
-    public $certainUrlCheck = 'https://ishimpravda.ru/news/191730.html';
+    public $certainUrlCheck = 'https://news.sarbc.ru/main/2020/10/27/253414.html';
 
     public function __construct()
     {
@@ -563,13 +563,13 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 // в остальных случаях жестко задается ядром
                 //
                 // не забывайте отключать лимит при сдаче парсера!
-                //            'itemsLimit' => 10,
+                //                        'itemsLimit' => 1,
 
                 // настройки сайта
                 'site'    => [
                     // протокол и домен
                     // (обязательный)
-                    'url'         => 'https://ishimpravda.ru',
+                    'url'         => 'http://www.sarbc.ru',
 
                     // использовать юзер-агенты в http запросах.
                     // (опционально)
@@ -581,7 +581,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // узнать UTC и прописать его в формате +XX00
                     // Например, Москва: '+0300', Владивосток: '+1000'
                     // (опционально)
-                    'time_zone'   => '+0500',
+                    'time_zone'   => '+0400',
 
                     // формат даты для HTML витрины и карточки
                     // (см. https://www.php.net/manual/ru/datetime.format.php)
@@ -605,7 +605,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'rss'     => [
                     // относительный URL где находится RSS
                     // (обязательный)
-                    'url'                 => '/rss/',
+                    'url'                 => '/rss/data-utf/main.rss',
 
                     // css селектор для элемента витрины (желательно от корня)
                     // (обязательный)
@@ -623,7 +623,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css селектор для описания элемента
                     // (опционально)
-                    'element-description' => '',
+                    'element-description' => 'description',
 
                     // css селектор для картинки элемента
                     // (опционально)
@@ -641,14 +641,15 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // css-селектор для контейнера карточки
                     // (можно несколько через запятую, если есть разные шаблоны новости)
                     // (обязательный)
-                    'container'           => '.single-post',
+                    'container'           => '.news-page-item',
 
                     // ** дальнейшие css-селекторы указываются относительно container
 
                     // css-селектор для основного текста * - данные внутри (картинки, ссылки) парсятся автоматически
                     // (можно несколько через запятую, если есть разные шаблоны новости)
                     // (обязательный)
-                    'element-text'        => '.entry',
+                    //                    'element-text'        => '.news-page-content',
+                    'element-text'        => '[itemprop="articleBody"]',
 
                     // css-селектор даты создания новости
                     // (опционально)
@@ -656,7 +657,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css селектор для описания элемента
                     // (опционально)
-                    'element-description' => 'p:first-child',
+                    'element-description' => '',
 
                     // css селектор для получения картинки
                     // !должен содержать конечный аттрибут src! (например: img.main-image[src])
@@ -671,11 +672,11 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // игнорируемые css-селекторы (будут вырезаться из результата)
                     // (можно несколько через запятую)
                     // (опционально)
-                    'ignore-selectors'    => 'p:first-child',
+                    'ignore-selectors'    => '',
 
                     // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня)
                     // (опционально)
-                    'element-text-before' => '',
+                    'element-text-before' => '.news_gallery, .news-page-item iframe',
                 ]
             ];
         }
