@@ -61,18 +61,18 @@ HTML,
 HTML,
 
 
-    'https://test/element-text-before' => <<<'HTML'
+    'https://test/element-text-insert' => <<<'HTML'
 <!DOCTYPE html>
 <html>
 <body>
 
-<h2 id="before1">
+<h2 id="insert1">
 Вставляемый <strong>текст</strong> извне
 </h2>
 
-<img id="before2" src="/before.jpg" />
+<img id="insert2" src="/insert.jpg" />
 
-<div id="before3">
+<div id="insert3">
     <div>
         <h2>Заголовок извне №3</h2>
         <p>текст извне №3</p>
@@ -81,7 +81,7 @@ HTML,
 
 <div id="container">
 
-    <div id="title">element-text-before</div>
+    <div id="title">element-text-insert</div>
     <div id="text">
     
     Оригинальный текст новости
@@ -405,7 +405,7 @@ HTML
 	<title>Тестоваая новость 1</title>
 	<author>fingli</author>
 	<pubDate>Thu, 15 Oct 2020 23:31:38 +0400</pubDate>
-	<link>https://test/element-text-before</link>
+	<link>https://test/element-text-insert</link>
 	<link1>https://test/mutants</link1>
 	<link1>https://test/news-bolvanka1</link1>
 	<enclosure url="/test.jpg" type="image/jpeg"></enclosure>

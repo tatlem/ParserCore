@@ -36,9 +36,9 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         // 2 - rss emulate
         // 4 - RSS https://www.riatomsk.ru/rss.xml
         // 5 - https://vesti-k.ru/news/2020/10/21/aksyonov-reshil-ne-otpuskat-shkolnikov-na-kanikuly/
-        // 6 - http://tv-karelia.ru/22-10-2020/
+        // 6 -
 
-        $configType = 1;
+        $configType = 2;
 
         if ($configType == 1)
         {
@@ -152,6 +152,14 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // (можно через запятую)
                     // (опционально)
                     'ignore-selectors'    => '',
+
+                    // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
+                    // (опционально)
+                    'element-text-before' => '',
+
+                    // css-селекторы которые будут вставлятся в конец текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
+                    // (опционально)
+                    'element-text-after'  => '',
                 ]
             ];
         }
@@ -201,8 +209,8 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'rss'        => [
                     // относительный URL где находится RSS
                     // (обязательный)
-                    //                    'url'                 => '/rss.xml',
-                    'url'                 => '/incorrect2.xml',
+                    'url'                 => '/rss.xml',
+                    //                    'url'                 => '/incorrect2.xml',
 
                     // css селектор для элемента витрины (желательно от корня)
                     // (обязательный)
@@ -269,6 +277,14 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // (можно несколько через запятую)
                     // (опционально)
                     'ignore-selectors'    => '.reklama, span.bad',
+
+                    // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
+                    // (опционально)
+                    'element-text-before' => '#insert1',
+
+                    // css-селекторы которые будут вставлятся в конец текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
+                    // (опционально)
+                    'element-text-after'  => '#insert3',
                 ]
             ];
         }
@@ -536,13 +552,13 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                 // максимальное количество новостей, берушихся с витрины
                 // (опционально)
-                //            'itemsLimit' => 1,
+                //           'itemsLimit' => 1,
 
                 // настройки сайта
                 'site'    => [
                     // протокол и домен
                     // (обязательный)
-                    'url'         => 'http://tv-karelia.ru',
+                    'url'         => 'http://gtrk-kaluga.ru',
 
                     // использовать юзер-агенты в http запросах.
                     // (опционально)
@@ -554,7 +570,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // узнать UTC и прописать его в формате +XX00
                     // Например, Москва: '+0300', Владивосток: '+1000'
                     // (опционально)
-                    'time_zone'   => '+0000',
+                    'time_zone'   => '+0300',
 
                     // формат даты для HTML витрины и карточки
                     // (см. https://www.php.net/manual/ru/datetime.format.php)
@@ -575,7 +591,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 'rss'     => [
                     // относительный URL где находится RSS
                     // (обязательный)
-                    'url'                 => '/feed/',
+                    'url'                 => '/rss/yandex/',
 
                     // css селектор для элемента витрины (желательно от корня)
                     // (обязательный)
@@ -602,7 +618,6 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     'element-date'        => 'pubDate',
                 ],
 
-
                 // настройка карточки элемента
                 // *** в CSS-селекторах можно указывать несколько селекторов через запятую (например, если сайт имеет несколько шаблонов карточки новости). Селекторы должны быть уникальны, иначе возможны коллизии
                 'element' => [
@@ -610,12 +625,12 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // css-селектор для контейнера карточки
                     // (все дальнейшие пути строятся относительно этого контейнера)
                     // (обязательный)
-                    'container'           => '.rd-single-item',
+                    'container'           => '.news.news-one',
 
                     // css-селектор для основного текста
                     // (для заполнения модели NewsPostItem)
                     // (обязательный)
-                    'element-text'        => 'section.rd-post-content',
+                    'element-text'        => '.redactor',
 
                     // css-селектор для получения даты создания новости
                     // (заполняется только, если отсутствует в витрине)
@@ -633,12 +648,12 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // css-селектор для цитаты
                     // (если не заполнено, то по умолчанию берутся теги: blockquote и q)
                     // (опционально)
-                    'element-quote'       => 'blockquote',
+                    'element-quote'       => '',
 
                     // игнорируемые css-селекторы (будут вырезаться из результата)
                     // (можно через запятую)
                     // (опционально)
-                    'ignore-selectors'    => '.wp-audio-shortcode',
+                    'ignore-selectors'    => '.image-gallery',
                 ]
             ];
         }
@@ -657,8 +672,8 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
         //        $Parser->testGetAttrFromSelector();
         //        die;
 
-        //        $certainUrl = 'https://vesti-k.ru/news/2020/10/21/aksyonov-reshil-ne-otpuskat-shkolnikov-na-kanikuly/';
-        //        $certainUrl = 'http://tv-karelia.ru/22-10-2020/';
+        // проверка только определенной страницы (выключить эмулятор!)
+        //        $certainUrl = 'https://gtrk-kaluga.ru/news/obschestvo/news-23295';
 
         // если надо взять конкретную новость
         if (!empty($certainUrl))

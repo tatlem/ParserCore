@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.1.2';
+    private const VERSION = '1.2.0';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -327,9 +327,13 @@ class ParserCore
             // (опционально)
             'ignore-selectors'    => '',
 
-            // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня)
+            // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
             // (опционально)
             'element-text-before' => '',
+
+            // css-селекторы которые будут вставлятся в конец текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
+            // (опционально)
+            'element-text-after'  => '',
         ]
     ];
 
@@ -1306,31 +1310,58 @@ class ParserCore
 
     /**
      *
+     * Вставка селекторов в текст
+     *
      * Вставляем в начало текста новости элементы из селекторов element-text-before
+     * Вставляем в конец текста новости элементы из селекторов element-text-after
      *
      * @param string $html - html текст новости element-text
      *
      * @return string
      */
-    protected function getHtmlWithPrependedSelectors(string $html)
+    protected function getHtmlWithInsertedSelectors(string $html)
     : string {
-        if (!empty($this->config['element']['element-text-before']) && !empty($this->currentPageFullHtml))
+        $htmlPrepended = '';
+        $htmlAppended  = '';
+
+        if (!empty($this->currentPageFullHtml))
         {
-            $htmlPrepended = '';
-
-            // найдем нужные селекторы в полном html страницы
-            $elements = $this->getElementsDataFromHtml($this->currentPageFullHtml, '', $this->config['element']['element-text-before'], 'html');
-
-            if (!empty($elements))
+            // перед текстом
+            if (!empty($this->config['element']['element-text-before']))
             {
-                foreach ($elements as $elementHtml)
+                // найдем нужные селекторы в полном html страницы
+                $elements = $this->getElementsDataFromHtml($this->currentPageFullHtml, '', $this->config['element']['element-text-before'], 'html');
+
+                if (!empty($elements))
                 {
-                    $htmlPrepended .= $elementHtml;
+                    foreach ($elements as $elementHtml)
+                    {
+                        $htmlPrepended .= $elementHtml;
+                    }
                 }
+
+                $htmlPrepended .= ' ';
             }
 
-            $html = $htmlPrepended . $html;
+            // в конец текст
+            if (!empty($this->config['element']['element-text-after']))
+            {
+                // найдем нужные селекторы в полном html страницы
+                $elements = $this->getElementsDataFromHtml($this->currentPageFullHtml, '', $this->config['element']['element-text-after'], 'html');
+
+                if (!empty($elements))
+                {
+                    foreach ($elements as $elementHtml)
+                    {
+                        $htmlAppended .= $elementHtml;
+                    }
+                }
+
+                $htmlAppended = ' ' . $htmlAppended;
+            }
         }
+
+        $html = $htmlPrepended . $html . $htmlAppended;
 
         return $html;
     }
@@ -1345,8 +1376,8 @@ class ParserCore
      */
     protected function getCardTextHtml(string $html)
     : string {
-        // добавляем css-селекторы в начало текста
-        $html = $this->getHtmlWithPrependedSelectors($html);
+        // добавляем css-селекторы в начало и/или в конец текста
+        $html = $this->getHtmlWithInsertedSelectors($html);
 
         // вырезаем игнорируемые теги
         $html = $this->getHtmlWithoutIgnoredSelectors($html);
