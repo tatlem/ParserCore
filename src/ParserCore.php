@@ -1784,6 +1784,7 @@ class ParserCore
                     }
                 }
             }
+
             $dateTime = DateTimeImmutable::createFromFormat($this->dateFormat, $date, $timeZone);
         }
 
@@ -2807,8 +2808,12 @@ class ParserCore
     function testGetDate($mode = 'all'
     ) {
         static::showLog('--- format= ' . $this->dateFormat . ' | zone= ' . $this->timeZone . ' ---');
+
+        $this->dateFormat = 'd.m.Y H:i';
+
         $valuesDate = [
             '',
+            '28.10.2020 07:38',
             '17:00',
             '16.10.2020 | 18:10',
             '15.10.2020',

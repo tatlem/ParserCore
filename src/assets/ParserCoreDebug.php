@@ -668,9 +668,9 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
 
         // ---- тесты ---
-        //        $Parser->testGetDate('all');
-        //        $Parser->testGetAttrFromSelector();
-        //        die;
+        $Parser->testGetDate('date');
+        //                $Parser->testGetAttrFromSelector();
+        die;
 
         // проверка только определенной страницы (выключить эмулятор!)
         //        $certainUrl = 'https://gtrk-kaluga.ru/news/obschestvo/news-23295';
