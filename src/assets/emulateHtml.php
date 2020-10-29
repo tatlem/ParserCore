@@ -2,6 +2,32 @@
 // крутые html примеры для теста https://www.htmhell.dev/1/
 
 return [
+    'https://test/spaces-in-attr' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+
+
+
+<div id="container">
+    <div class="img1"> /ava.jpg 
+    </div>
+
+    <div id="text">
+    
+    <img src=" /normal.jpg 
+    " />
+    <img src="/with spaces.jpg" />
+    <a href=" /some ">some</a>
+    <a href="/some2%20">some</a>
+    
+    </div>
+</div>
+</body>
+</html>
+
+HTML,
+
     'https://test/image-from-background' => <<<'HTML'
 <!DOCTYPE html>
 <html>
@@ -428,6 +454,10 @@ HTML
 <body>
 <div id="container">
 <div class="item">
+    <a href="https://test/spaces-in-attr">пробелы в атрибутах</a>
+    <img1 src="/ava.jpg" alt="avava"/>
+</div>
+<div class="item1">
     <div class="desc">картинки из бэка</div>
     <a href="https://test/image-from-background">картинки из бэка</a>
     <img1 src="/ava.jpg" alt="avava"/>

@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.3';
+    private const VERSION = '1.3.5';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1716,11 +1716,27 @@ class ParserCore
             return $this->getCorrectedDateToGrinvich($dateTime);
         }
 
-        // убираем теги, которые скорее всего содержат ненужную инфу (div)
-        $date = preg_replace('~<div(.*?)</div>~Usi', "", $date);
+        // убираем теги A, которые скорее всего содержат ненужную инфу (div)
+        $date = preg_replace('~<a(.*?)</a>~Usi', "", $date);
 
         // вырезаем лишние теги
         $date = strip_tags($date);
+
+        // убираем entities
+        $date = html_entity_decode($date);
+
+        // убираем ненужные слова
+        $replacedWords = [
+            ' г.',
+            ' г.',
+            ' год',
+            ' год',
+            ' года',
+            ' года',
+        ];
+
+        $date = str_replace(' ', ' ', $date);
+        $date = str_replace($replacedWords, '', $date);
 
         // вырезаем лишние символы
         if ($this->currentElement != 'rss')
@@ -1740,6 +1756,8 @@ class ParserCore
                 $date = str_replace($stopWord, '', $date);
             }
         }
+
+        $date = trim($date);
 
         // вырезаем безхозные точки
         $date = $date . ' ';
@@ -1831,6 +1849,10 @@ class ParserCore
      * а также, типа: 15 октября 2020
      *
      */
+    // @todo некоторые форматы даты не поддерживаются, а именно:
+    // 2020 | ноябрь | 23
+    // январь
+    // 16.10 в 21:30
     protected
     function getDateFromText(string $date, DateTimeZone $timeZone
     )
@@ -1880,87 +1902,96 @@ class ParserCore
         }
 
 
-        // сложная дата
-        preg_match('/\d{2}:\d{2}/', $date, $matches);
-        preg_match('/\d+\s\D{3,}\s\d{4}/', $date, $matches2);
-        preg_match('/[^\.]+\d+\s\D{3,}/', $date, $matches3);
-
-        $timeStr        = $matches[0] ?? '';
-        $dateStr        = $matches2[0] ?? '';
-        $dayAndMonthStr = '';
-
-        if (isset($matches3[0]) && strlen(trim($matches3[0])) > 6)
+        if ('сложная дата (разбираем ее на часы, минуты, год, день-месяц, а остальное отбрасываем)')
         {
-            $dayAndMonthStr = trim($matches3[0]);
-        }
+            $date = ' ' . $date . ' ';
 
-        // если есть три точки, то это полная дата
-        if (substr_count($date, '.') == 2)
-        {
-            preg_match('/\d{2}\.\d{2}\.(\d{2,4})/', $date, $fullDateMatches);
+            // вырезаем все слова меньше трех символов
+            $date = preg_replace('/\s\p{Cyrillic}{1,2}\s/u', ' ', $date);
 
-            $fullDateStr     = $fullDateMatches[0] ?? '';
-            $fullDateYearStr = $fullDateMatches[1] ?? '';
+            // часы
+            preg_match('/\d{2}:\d{2}/', $date, $matchHourMinute);
 
+            $timeStr = $matchHourMinute[0] ?? '';
 
-            $fullDateFormatDate = 'd.m.Y';
-
-            if ($fullDateStr)
+            if ($timeStr)
             {
-                if (strlen($fullDateYearStr) == 2)
-                {
-                    $fullDateFormatDate = 'd.m.y';
-                }
-
-                if ($timeStr)
-                {
-                    return DateTimeImmutable::createFromFormat($fullDateFormatDate . ' H:i', $fullDateStr . ' ' . $timeStr, $timeZone);
-                }
-                else
-                {
-                    return DateTimeImmutable::createFromFormat($fullDateFormatDate, $fullDateStr, $timeZone);
-                }
+                $timeStr = trim($timeStr);
             }
-        }
+            else
+            {
+                $timeStr = date('12:00');
+            }
 
-        //        echo '$timeStr = ' . $timeStr . PHP_EOL;
-        //        echo '$dateStr = ' . $dateStr . PHP_EOL;
-        //        echo '$dayAndMonthStr = ' . $dayAndMonthStr . PHP_EOL;
+            $date = str_replace($timeStr, '', $date);
 
-        if (!empty($dateStr) || !empty($dayAndMonthStr))
-        {
+            // год
+            preg_match('/\d{4}/', $date, $matchYear);
+
+            $timeYear = $matchYear[0] ?? '';
+
+            if ($timeYear)
+            {
+                $timeYear = trim($timeYear);
+            }
+            else
+            {
+                $timeYear = date('Y');
+            }
+
+            $date = str_replace($timeYear, '', $date);
+
+            // день и месяц
+            preg_match('/(?<dayMonth>\d+\s\p{Cyrillic}{3,}+)/iu', $date, $matchDateDayMonth);
+
+            $dayAndMonth = $matchDateDayMonth['dayMonth'] ?? '';
+
+            if ($dayAndMonth)
+            {
+                $dayAndMonth = trim($dayAndMonth);
+                $date        = str_replace($dayAndMonth, '', $date);
+            }
+
+            if (!empty($dayAndMonth))
+            {
+                $fullDate = $dayAndMonth . ' ' . $timeYear;
+            }
+            else
+            {
+                $fullDate = date('d m') . ' ' . $timeYear;
+            }
+
+            //
+            // собираем новую дату
+            //
+
+            // узнаем дату из месяца
             $dateWithNumMonth = '';
 
-            if ($dateStr)
+            if (!empty($fullDate))
             {
-                $dateWithNumMonth = $this->getDateWithNumMonth($dateStr);
-            }
-            elseif ($dayAndMonthStr && empty($dateStr))
-            {
-                $dateWithNumMonth = $this->getDateWithNumMonth($dayAndMonthStr);
+                $dateWithNumMonth = $this->getDateWithNumMonth($fullDate);
             }
 
-            if (!empty($dateWithNumMonth))
-            {
-                if (!empty($timeStr))
-                {
-                    $fullDate = $dateWithNumMonth . ' ' . trim($timeStr);
+            $date = $dateWithNumMonth . ' ';
 
-                    if (strlen($fullDate) > 14)
-                    {
-                        return DateTimeImmutable::createFromFormat('d m Y H:i', $fullDate, $timeZone);
-                    }
-                }
-                else
-                {
-                    return DateTimeImmutable::createFromFormat('d m Y', $dateWithNumMonth, $timeZone);
-                }
+            // добавляем время
+            if (!empty($timeStr))
+            {
+                $date .= $timeStr;
+            }
+
+            if (strlen($date) >= 15)
+            {
+                return DateTimeImmutable::createFromFormat('d m Y H:i', $date, $timeZone);
             }
         }
 
         // поздравляю! Вы победили в конкурсе "самая оригинальная дата"
         // @bug no timeZone
-        return $this->TimeParser->parse($date);
+        {
+            return $this->TimeParser->parse($date);
+        }
     }
 
     private
@@ -1999,6 +2030,7 @@ class ParserCore
             'июн'      => '06',
             'июл'      => '07',
             'авг'      => '08',
+            'сен'      => '09',
             'сент'     => '09',
             'окт'      => '10',
             'ноя'      => '11',
@@ -2067,6 +2099,7 @@ class ParserCore
         $Crawler   = new Crawler($html);
         $attribute = $this->getAttrFromSelector($elementSelector);
         $elements  = $Crawler->filter($fullSelector);
+
 
         if ($elements)
         {
@@ -2202,10 +2235,19 @@ class ParserCore
     function getUrl(?string $url
     )
     : ?string {
+        // кодируем кириллицу в ссылках
         if (!empty($url))
         {
             $url = $this->encodeRusUrl($url);
         }
+
+        // убираем пробелы в конце (%20 %0A)
+        if (strpos($url, '%20') !== false ||
+            strpos($url, '%0A') !== false)
+        {
+            $url = preg_replace('/[%20%0A]*$/', '', $url);
+        }
+
 
         $url = ($url) ? UriResolver::resolve($url, $this->siteUrl) : null;
 
@@ -2844,11 +2886,20 @@ class ParserCore
 
     // @note чтобы потестить даты без текста должен быть включен режим desktop
     public
-    function testGetDate($mode = 'all'
+    function testGetDate($mode = 'all', string $dateFormat = ''
     ) {
-        static::showLog('--- format= ' . $this->dateFormat . ' | zone= ' . $this->timeZone . ' ---');
+        if (empty($dateFormat))
+        {
+            $this->dateFormat = 'd.m.Y H:i';
+        }
+        else
+        {
+            $this->dateFormat = $dateFormat;
+        }
 
-        $this->dateFormat = 'd.m.Y H:i';
+        $this->timeZone = '+0000';
+
+        static::showLog('--- format= ' . $this->dateFormat . ' | zone= ' . $this->timeZone . ' ---');
 
         $valuesDate = [
             '',
@@ -2864,6 +2915,17 @@ class ParserCore
             //            '2020.01.01',
         ];
         $valuesText = [
+            '1 ноября',
+            '1 ноября 2019',
+            '1 ноября 2020',
+            '1 ноября 2020 в 10:00',
+            '1 ноября 2020 в 10:00:11',
+            '2020, 23 ноября',
+            '16 Окт, 2020',
+            '2020 | ноябрь | 23',
+            '28 сен 2020 / из 11:22:33',
+            '1&nbsp;ноября 2020',
+            '<div class="b-material-head__date"><span class="b-material-head__date-day">1&nbsp;ноября 2020&nbsp;г.</span> <span class="b-material-head__date-time">14:40</span></div>',
             'Sat, 24 Oct 2020 07:21:09 +0400',
             ' 22 Октября, Четверг',
             ' 22 Октября, пт.',
@@ -2887,10 +2949,6 @@ class ParserCore
             '7 часов назад',
             'вчера в 19:10',
             'вчера',
-            '1 октября',
-            '11 октября 2019',
-            '11 октября 2019, 10:00:00',
-            '16 Окт, 2020',
             '',
             'uqgwejhjvjv',
             'фигня какая-то'
