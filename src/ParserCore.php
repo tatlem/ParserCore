@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.5';
+    private const VERSION = '1.3.6';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -87,7 +87,7 @@ class ParserCore
     // лимит на кол-во элементов по умолчанию
     private const MAX_ITEMS = 10;
     // максимальный размер дескрипшена
-    private const MAX_DESCRIPTION_LENGTH = 200;
+    private const MAX_DESCRIPTION_LENGTH = 1000000;
     // лимит на кол-во элементов
     protected int $itemsLimit = self::MAX_ITEMS;
     // @todo
@@ -856,7 +856,34 @@ class ParserCore
                     $description = $cardItem['description'];
                 }
 
-                $description = $this->substrMax($description, self::MAX_DESCRIPTION_LENGTH);
+                //                $description = $this->substrMax($description, self::MAX_DESCRIPTION_LENGTH);
+                //                $description = '';
+
+                if (!empty($description))
+                {
+                    $description = substr($description, 0, self::MAX_DESCRIPTION_LENGTH);
+                }
+
+                // если нет дескрипшена, то берем его из текста
+                // Текст начинает обрезаться с 200-го символа и до первой попавшейся точки. Другие знаки, кроме точки игнорируются (,!*? и т.п.).
+                if (empty($description))
+                {
+                    $rawText = strip_tags($cardItem['textHtml']);
+
+                    // только если текст большой
+                    if (strlen($rawText) > 200)
+                    {
+                        $dotStartFrom     = strpos($rawText, '. ', 200);
+                        $textTillFirstDot = substr($rawText, 0, $dotStartFrom + 1);
+                        $description      = $textTillFirstDot;
+                    }
+                    // маленький текст идет полностью в дескрипшен
+                    else
+                    {
+                        $description = $rawText;
+                    }
+                }
+
 
                 // title
                 if (!empty($listItem['title']))
@@ -986,6 +1013,14 @@ class ParserCore
                                 )
                                 {
                                     break;
+                                }
+
+                                // реализовываем логику клиента по удалению дублей дескрипшена из текста
+                                // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
+                                // поэтому подстраховываемся и усиливаем уникальность текста (кол-во символов)
+                                if ($i == 1 & strlen($description) > 100)
+                                {
+                                    $data['text'] = str_replace($description, ' ', $data['text']);
                                 }
 
                                 // пропускаем текст, если он такой же как дескрипшен
@@ -1201,6 +1236,7 @@ class ParserCore
                     'image'       => $elImage,
                     'date'        => $elDate,
                     'data'        => $elItemData,
+                    'textHtml'    => $elTextHtml,
                 ];
             }
             else
@@ -1385,10 +1421,13 @@ class ParserCore
         // подменяем цитаты
         $html = $this->getHtmlWithSubstitutedQuotes($html);
 
-        // коррекция тегов для правильной обрезки
+        // коррекция тегов, чтобы слова не склеивались после вырезки тегов
         // (в частности нужно добавить пробелы перед <td> и <li>, чтобы текст не сливался
         $html = str_replace('<td>', '<td> ', $html);
+        $html = str_replace('</td>', ' </td>', $html);
         $html = str_replace('<li>', '<li> ', $html);
+        $html = str_replace('</li>', ' </li>', $html);
+        $html = str_replace('</p>', ' </p>', $html);
 
         // вырезаем все ненужные теги, кроме разрешенных в allowedTags
         $html = strip_tags($html, $this->allowedTags);
