@@ -14,6 +14,15 @@ return [
     </div>
 
     <div id="text">
+    пробелы в атрибутах
+
+    <p>test1</p><a href="/asd">link</a><p>test2</p><p>test3</p>
+    <p>test4</p>
+    
+    
+    
+    
+    
     Я
     тут
     

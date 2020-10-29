@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.7';
+    private const VERSION = '1.3.8';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -760,10 +760,12 @@ class ParserCore
 
                         foreach ($acumulator as $acumData)
                         {
-                            $acumMerged['text'] .= ' ' . $acumData['text'];
+                            //                            $acumMerged['text'] .= ' ' . $acumData['text'];
+                            $acumMerged['text'] .= $acumData['text'];
                         }
 
-                        $acumMerged['text'] .= ' ' . $cur['text'];
+                        //                        $acumMerged['text'] .= ' ' . $cur['text'];
+                        $acumMerged['text'] .= $cur['text'];
 
                         $dataNew[] = $acumMerged;
 
@@ -866,7 +868,7 @@ class ParserCore
 
                 // если нет дескрипшена, то берем его из текста
                 // Текст начинает обрезаться с 200-го символа и до первой попавшейся точки. Другие знаки, кроме точки игнорируются (,!*? и т.п.).
-                if (empty($description))
+                if (empty($description) && !empty($cardItem['textHtml']))
                 {
                     $rawText = strip_tags($cardItem['textHtml']);
 
@@ -882,7 +884,6 @@ class ParserCore
                     {
                         $description = $rawText;
                     }
-
                     $description = str_replace("\n", '', $description);
                 }
 
@@ -1020,9 +1021,14 @@ class ParserCore
                                 // реализовываем логику клиента по удалению дублей дескрипшена из текста
                                 // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
                                 // поэтому подстраховываемся и усиливаем уникальность текста (кол-во символов)
-                                if ($i == 1 & strlen($description) > 100)
+                                if ($i == 1 & strlen($description) > 10)
                                 {
-                                    $data['text'] = str_replace($description, ' ', $data['text']);
+                                    //                                    echo 'text = ' . $data['text'];
+                                    //                                    echo PHP_EOL;
+                                    //                                    echo PHP_EOL;
+                                    //                                    echo 'desc = ' . $description;
+                                    //                                    echo PHP_EOL;
+                                    $data['text'] = str_replace(trim($description), '', $data['text']);
                                 }
 
                                 // пропускаем текст, если он такой же как дескрипшен
@@ -1614,7 +1620,7 @@ class ParserCore
                             {
                                 $data = [
                                     'type' => self::TYPE_TEXT,
-                                    'text' => $val,
+                                    'text' => ' ' . $val . ' ',
                                     'tag'  => $tagName,
                                 ];
                             }

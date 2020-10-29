@@ -23,15 +23,15 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     const FOR_CORE_VERSION = '1.0';
     // режим эмуляции запросов (только для разработки)
     // включить дебаг-режим (только для разработки)
-    protected const DEBUG = 1;
+    protected const DEBUG = 0;
     // дебаг-режим  (только для разработки) [core, default]
     protected const DEBUG_MODE = 'default';
     //    protected const DEBUG_MODE = 'talkative';
 
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
-    protected const EMULATE_MODE = true;
+    protected const EMULATE_MODE = false;
     // запрос на определенный урл (если включен, то отключать эмулятор)
-    //    public $certainUrlCheck = 'https://krukovo-vedomosti.ru/news/for_residents/gbu-zhilishchnik-zelao-napominaet-o-neobkhodimosti-svoevremenno-oplachivat-zhilishchno-kommunalnye-u';
+    public $certainUrlCheck = 'https://knife.media/moscow-krasnoyarsk/';
 
     public function __construct()
     {
@@ -557,20 +557,20 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                 // режимы работы парсера:
                 // rss - RSS витрина
                 // desktop - обычный сайт HTML
-                'mode'    => 'desktop',
+                'mode'       => 'rss',
 
                 // максимальное количество новостей, берушихся с витрины
                 // ИСПОЛЬЗУЕТСЯ ТОЛЬКО В РЕЖИМЕ DEBUG
                 // в остальных случаях жестко задается ядром
                 //
                 // не забывайте отключать лимит при сдаче парсера!
-                //    'itemsLimit' => 1,
+                'itemsLimit' => 2,
 
                 // настройки сайта
-                'site'    => [
+                'site'       => [
                     // протокол и домен
                     // (обязательный)
-                    'url'         => 'https://rg.ru',
+                    'url'         => 'https://knife.media',
 
                     // использовать юзер-агенты в http запросах.
                     // (опционально)
@@ -596,65 +596,60 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // формат даты в RSS
                     // (указывать только если он отличается от стандартного D, d M Y H:i:s O!)
-                    // 'date_format_rss' => 'D, d M Y H:i:s O',
+                    //                'date_format_rss' => 'D, d M Y H:i:s O',
 
                     // пауза между запросами в секундах (включается только, если сайт начинает блокировку)
                     //                'pause'       => 0,
                 ],
 
-                // настройки витрины (режим HTML)
-                // !!! заполняется, только при отсутствии витрины RSS !!!
-                'list'    => [
-                    // URL где находится витрина
+                // настройки витрины (режим RSS)
+                'rss'        => [
+                    // относительный URL где находится RSS
                     // (обязательный)
-                    'url'                 => '/rodina/articles-page',
+                    'url'                 => '/feed/',
 
-                    // css селектор для контейнера витрины
+                    // css селектор для элемента витрины (желательно от корня)
                     // (обязательный)
-                    'container'           => '.b-news__body',
-
-                    // css селектор для элемента витрины (относительно контейнера)
-                    // (обязательный)
-                    'element'             => '.b-news__list-item',
+                    'element'             => 'rss > channel > item',
 
                     // ** дальнейшие css-селекторы указываются относительно element
 
-                    // css селектор для ссылки на элемент !должен содержать конечный аттрибут href!
-                    // (обязательный + должен быть обязательный атрибут, где хранится ссылка)
-                    'element-link'        => '.b-link_title[href]',
-
                     // css селектор для названия элемента
-                    // (опционально)
-                    'element-title'       => '.b-link_title',
+                    // (обязательный)
+                    'element-title'       => 'title',
+
+                    // css селектор для ссылки
+                    // (обязательный)
+                    'element-link'        => 'link',
 
                     // css селектор для описания элемента
                     // (опционально)
-                    'element-description' => '.b-news__list-item-announce',
+                    'element-description' => 'description',
 
-                    // css селектор !должен содержать конечный аттрибут src! для картинки элемента
+                    // css селектор для картинки элемента
                     // (опционально)
-                    'element-image'       => '.b-news__list-item-image[src]',
+                    'element-image'       => '',
 
                     // css селектор для даты элемента
                     // (опционально)
-                    'element-date'        => '.b-news__list-item-time',
+                    'element-date'        => 'pubDate',
                 ],
 
                 // настройка карточки элемента
                 // *** в CSS-селекторах можно указывать несколько селекторов через запятую (например, если сайт имеет несколько шаблонов карточки новости). Селекторы должны быть уникальны, иначе возможны коллизии
-                'element' => [
+                'element'    => [
 
                     // css-селектор для контейнера карточки
                     // (можно несколько через запятую, если есть разные шаблоны новости)
                     // (обязательный)
-                    'container'           => '#articleContainer',
+                    'container'           => 'article.post',
 
                     // ** дальнейшие css-селекторы указываются относительно container
 
                     // css-селектор для основного текста * - данные внутри (картинки, ссылки) парсятся автоматически
                     // (можно несколько через запятую, если есть разные шаблоны новости)
                     // (обязательный)
-                    'element-text'        => '.b-material-wrapper__text',
+                    'element-text'        => '.entry-content',
 
                     // css-селектор даты создания новости
                     // (опционально)
@@ -667,7 +662,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // css селектор для получения картинки
                     // !должен содержать конечный аттрибут src! (например: img.main-image[src])
                     // (опционально)
-                    'element-image'       => '',
+                    'element-image'       => 'img.figure__image[src]',
 
                     // css-селектор для цитаты
                     // (если не заполнено, то по умолчанию берутся теги: blockquote и q)
@@ -681,7 +676,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css-селекторы которые будут вставлятся в начало текста новости element-text (селекторы ищутся от корня)
                     // (опционально)
-                    'element-text-before' => '.b-material-head__date-day',
+                    'element-text-before' => '',
                 ]
             ];
         }
