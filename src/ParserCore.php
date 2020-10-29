@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.6';
+    private const VERSION = '1.3.7';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -882,6 +882,8 @@ class ParserCore
                     {
                         $description = $rawText;
                     }
+
+                    $description = str_replace("\n", '', $description);
                 }
 
 
@@ -1029,15 +1031,24 @@ class ParserCore
                                     break;
                                 }
 
-                                $Post->addItem(
-                                    new NewsPostItem(
-                                        NewsPostItem::TYPE_TEXT,
-                                        $data['text'],
-                                        null,
-                                        null,
-                                        null,
-                                        null
-                                    ));
+                                $data['text'] = trim($data['text']);
+
+                                if (!empty($data['text']))
+                                {
+                                    // вырезаем большие отступы
+                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n\n", $data['text']);
+
+                                    $Post->addItem(
+                                        new NewsPostItem(
+                                            NewsPostItem::TYPE_TEXT,
+                                            $data['text'],
+                                            null,
+                                            null,
+                                            null,
+                                            null
+                                        ));
+                                }
+
                                 break;
 
                             case 'video':

@@ -14,12 +14,40 @@ return [
     </div>
 
     <div id="text">
+    Я
+    тут
+    
+    что-то
+    
+    
+    уже
+    
+    
+    
+    
+        написал
     
     <img src=" /normal.jpg 
     " />
     <img src="/with spaces.jpg" />
     <a href=" /some ">some</a>
     <a href="/some2%20">some</a>
+    
+    
+    
+    
+    
+    
+    
+    текст
+    
+    
+    
+    
+    
+    еще текст
+    
+        текст
     
     </div>
 </div>
