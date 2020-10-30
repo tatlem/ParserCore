@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.8';
+    private const VERSION = '1.3.9';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -902,6 +902,9 @@ class ParserCore
                 {
                     $description = $title;
                 }
+
+                // вырезаем из title лишнее
+                $title = html_entity_decode($title);
 
                 // date
                 if (!empty($listItem['date']))
