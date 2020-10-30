@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.10';
+    private const VERSION = '1.3.11';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1448,6 +1448,8 @@ class ParserCore
         $html = str_replace('<li>', '<li> ', $html);
         $html = str_replace('</li>', ' </li>', $html);
         $html = str_replace('</p>', ' </p>', $html);
+        $html = str_replace('<br>', ' ', $html);
+        $html = str_replace('<br/>', ' ', $html);
 
         // вырезаем все ненужные теги, кроме разрешенных в allowedTags
         $html = strip_tags($html, $this->allowedTags);
