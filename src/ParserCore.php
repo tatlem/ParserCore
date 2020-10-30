@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.9';
+    private const VERSION = '1.3.10';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1775,8 +1775,9 @@ class ParserCore
             return $this->getCorrectedDateToGrinvich($dateTime);
         }
 
+        // @bug - дата была заключена в ссылке <a href="http://nashcheremshan.ru/news/date/list/2020-10-30%2009:01:00" class="page-main__publish__date">30 октября 2020 - 09:01</a>
         // убираем теги A, которые скорее всего содержат ненужную инфу (div)
-        $date = preg_replace('~<a(.*?)</a>~Usi', "", $date);
+        //        $date = preg_replace('~<a(.*?)</a>~Usi', "", $date);
 
         // вырезаем лишние теги
         $date = strip_tags($date);
