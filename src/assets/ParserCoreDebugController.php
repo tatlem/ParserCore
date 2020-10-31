@@ -9,6 +9,8 @@ use yii\console\Controller;
 // 0 - отключаем режим дебага у всех парсеров, 1+ - включаем
 // данная строка должна быть всегда закомментирована, если не идет проверка
 //define('CORE_PARSER_DEBUG_EXTERNAL', 0);
+// кол-во парсеров
+//define('CORE_PARSER_LIMIT_ITEMS_EXTERNAL', 2);
 
 class ParserCoreDebugController extends Controller
 {
@@ -67,7 +69,7 @@ class ParserCoreDebugController extends Controller
                     continue;
                 }
 
-                echo $pathinfo['filename'] . ' => ';
+                echo ($i + 1) . '. ' . $pathinfo['filename'] . ' => ';
 
                 $class = 'app\components\parser\\news\\' . $pathinfo['filename'];
 

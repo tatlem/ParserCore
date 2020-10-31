@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.5';
+    private const VERSION = '1.3.6';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -932,6 +932,12 @@ class ParserCore
 
                                     // проверяем что нет дубля с названием
                                     if ($data['text'] == $title && $i == 1)
+                                    {
+                                        break;
+                                    }
+
+                                    // пропускаем заголовок, если он такой же как дескрипшен
+                                    if ($data['text'] === $description)
                                     {
                                         break;
                                     }
@@ -2657,7 +2663,14 @@ class ParserCore
         // считаем что также лимит = 1
         if (defined('CORE_PARSER_DEBUG_EXTERNAL'))
         {
-            $realLimit = 1;
+            if (defined('CORE_PARSER_LIMIT_ITEMS_EXTERNAL'))
+            {
+                $realLimit = CORE_PARSER_LIMIT_ITEMS_EXTERNAL;
+            }
+            else
+            {
+                $realLimit = 1;
+            }
         }
 
 
@@ -2990,5 +3003,10 @@ class ParserCore
         {
             echo $selector . ' => ' . $this->getAttrFromSelector($selector) . PHP_EOL;
         }
+    }
+
+    public function getVersion()
+    {
+        return self::VERSION;
     }
 }
