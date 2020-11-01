@@ -29,9 +29,9 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
     //    protected const DEBUG_MODE = 'talkative';
 
     // для подделки запроса к URL нужно добавить элемент массива в файле emulateHtml.php
-    protected const EMULATE_MODE = false;
+    protected const EMULATE_MODE = true;
     // запрос на определенный урл (если включен, то отключать эмулятор)
-    public $certainUrlCheck = 'https://knife.media/moscow-krasnoyarsk/';
+    //    public $certainUrlCheck = 'https://knife.media/moscow-krasnoyarsk/';
 
     public function __construct()
     {
@@ -136,7 +136,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
 
                     // css-селектор описания элемента
                     // (заполняется только, если отсутствует в витрине)
-                    'element-description' => '',
+                    'element-description' => '#desc',
 
                     // css-селектор для получения даты создания новости
                     // (заполняется только, если отсутствует в витрине)

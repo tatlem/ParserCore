@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.11';
+    private const VERSION = '1.3.12';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -87,7 +87,7 @@ class ParserCore
     // лимит на кол-во элементов по умолчанию
     private const MAX_ITEMS = 10;
     // максимальный размер дескрипшена
-    private const MAX_DESCRIPTION_LENGTH = 1000000;
+    private const MAX_DESCRIPTION_LENGTH = 100000;
     // лимит на кол-во элементов
     protected int $itemsLimit = self::MAX_ITEMS;
     // @todo
@@ -656,9 +656,9 @@ class ParserCore
 
         if ($this->debug >= 3)
         {
-            echo "------ itemsParsed (before normalize) -----\033[44m" . PHP_EOL;
+            echo "------ itemsParsed (getCards) (before normalize) -----\033[44m" . PHP_EOL;
             print_r($itemsParsed);
-            echo "------ / itemsParsed (before normalize) -----\033[44m" . PHP_EOL;
+            echo "------ / itemsParsed (getCards) (before normalize) -----\033[44m" . PHP_EOL;
         }
 
         static::showLog(PHP_EOL . '----------------------------------');
@@ -670,9 +670,9 @@ class ParserCore
 
         if ($this->debug >= 3)
         {
-            echo "------ itemsParsed (normalized) -----\033[44m" . PHP_EOL;
+            echo "------ itemsParsed (getCards) (normalized) -----\033[44m" . PHP_EOL;
             print_r($itemsParsed);
-            echo "------ / itemsParsed (normalized) -----\033[44m" . PHP_EOL;
+            echo "------ / itemsParsed (getCards) (normalized) -----\033[44m" . PHP_EOL;
         }
 
         static::showLog(PHP_EOL . '----------------------------------');
@@ -791,6 +791,38 @@ class ParserCore
 
     /**
      *
+     * Очищяем текст от лишних символов
+     * (для корректного сравнения desc vs text)
+     *
+     * @param string $text
+     *
+     * @return string
+     */
+    protected function getCleanText(string $text)
+    : string {
+        // убираем непечатные символы
+        // @author https://stackoverflow.com/questions/1176904/php-how-to-remove-all-non-printable-characters-in-a-string
+        $text = preg_replace('/[\x00-\x1F\x7F]/u', '', $text);
+        $text = preg_replace('/[\xA0]/u', ' ', $text);
+
+        // заменяем сущности
+        $text = html_entity_decode($text);
+
+        // заменяем некоторые символы
+        $substituteSymbs = [
+            '—' => '-'
+        ];
+
+        foreach ($substituteSymbs as $from => $to)
+        {
+            $text = str_replace($from, $to, $text);
+        }
+
+        return trim($text);
+    }
+
+    /**
+     *
      * Адаптер для перехода из внутреннего формата в формат клиента
      *
      * NewsPost
@@ -817,6 +849,12 @@ class ParserCore
     // $cards - то что собрали с карточек
     protected function getAdaptiveToParser1500(array $cards)
     : array {
+        if ($this->debug >= 3)
+        {
+            echo "\033[0m";
+            static::showLog('--- getAdaptiveToParser1500() ---');
+        }
+
         if (empty($cards))
         {
             throw new Exception('Нет данных из карточек новостей для адаптации');
@@ -831,12 +869,23 @@ class ParserCore
                 $listItem = $item;
                 $cardItem = $cards[$url] ?? null;
 
+                if ($this->debug >= 3)
+                {
+                    echo "\033[40m";
+                    echo '- ' . $url . PHP_EOL;
+                    echo '$listItem = ' . PHP_EOL;
+                    print_r($listItem);
+                    echo '$cardItem = ' . PHP_EOL;
+                    print_r($cardItem);
+                    echo "\033[0m";
+                }
+
                 $title       = '';
                 $date        = '';
                 $image       = '';
                 $description = '';
 
-                // мержим значения
+                // объединяем значения
 
                 // description
                 if (isset($listItem['description']))
@@ -849,24 +898,28 @@ class ParserCore
                     $cardItem['description'] = $this->stripText($cardItem['description']) ?? '';
                 }
 
-                if (!empty($listItem['description']))
-                {
-                    $description = $listItem['description'];
-                }
-                elseif (!empty($cardItem['description']))
+                // в приоритете карточка, если установлена
+                if (!empty($this->config['element']['element-description']) && !empty($cardItem['description']))
                 {
                     $description = $cardItem['description'];
                 }
+                // если нет, то витрина
+                elseif (!empty($listItem['description']))
+                {
+                    $description = $listItem['description'];
+                }
+
 
                 //                $description = $this->substrMax($description, self::MAX_DESCRIPTION_LENGTH);
                 //                $description = '';
 
+                // на всякий случай обрезаем
                 if (!empty($description))
                 {
                     $description = substr($description, 0, self::MAX_DESCRIPTION_LENGTH);
                 }
 
-                // если нет дескрипшена, то берем его из текста
+                // если нет дескрипшена, то берем его из raw текста
                 // Текст начинает обрезаться с 200-го символа и до первой попавшейся точки. Другие знаки, кроме точки игнорируются (,!*? и т.п.).
                 if (empty($description) && !empty($cardItem['textHtml']))
                 {
@@ -884,8 +937,11 @@ class ParserCore
                     {
                         $description = $rawText;
                     }
-                    $description = str_replace("\n", '', $description);
+                    //                    $description = str_replace("\n", '', $description);
                 }
+
+                // очищяем дескр от лишних символов
+                $description = $this->getCleanText($description);
 
 
                 // title
@@ -898,7 +954,7 @@ class ParserCore
                     $title = $description;
                 }
 
-                if (empty($description))
+                if (empty($description) && !empty($title))
                 {
                     $description = $title;
                 }
@@ -940,7 +996,9 @@ class ParserCore
                 // add data to post
                 if (!empty($cardItem['data']))
                 {
-                    $i = 1;
+                    $i             = 1;
+                    $isFirstText   = true; // первый хедер
+                    $isFirstHeader = true; //  первый текст
 
                     $images = [];
 
@@ -969,16 +1027,83 @@ class ParserCore
                                         break;
                                     }
 
+                                    // реализовываем логику клиента по удалению дублей дескрипшена из заголовка
+                                    // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
+                                    // поэтому подстраховываемся и усиливаем уникальность дескр (кол-во символов)
+                                    if ($isFirstHeader & strlen($description) > 10)
+                                    {
+                                        // очищяем текст от лишних символов, чтобы он соответствовал дескр
+                                        $data['text'] = $this->getCleanText($data['text']);
+
+                                        // вырезаем дескр из текста
+                                        $data['text'] = str_replace($description, '', $data['text']);
+                                    }
+
+                                    if (!empty($data['text']))
+                                    {
+                                        $Post->addItem(
+                                            new NewsPostItem(
+                                                NewsPostItem::TYPE_HEADER,
+                                                $data['text'],
+                                                null,
+                                                null,
+                                                $level,
+                                                null
+                                            ));
+
+                                        if ($isFirstHeader)
+                                        {
+                                            $isFirstHeader = false;
+                                        }
+                                    }
+                                }
+                                break;
+
+                            case 'text':
+                                // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
+                                if (
+                                    (strlen($data['text']) <= 4 && !preg_match('/[^\s.,\?\!]+/', $data['text'])) ||
+                                    empty(trim($data['text']))
+                                )
+                                {
+                                    break;
+                                }
+
+                                // реализовываем логику клиента по удалению дублей дескрипшена из текста
+                                // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
+                                // поэтому подстраховываемся и усиливаем уникальность дескр (кол-во символов)
+                                if ($isFirstText & strlen($description) > 10)
+                                {
+                                    // очищяем текст от лишних символов, чтобы он соответствовал дескр
+                                    $data['text'] = $this->getCleanText($data['text']);
+
+                                    // вырезаем дескр из текста
+                                    $data['text'] = str_replace($description, '', $data['text']);
+                                }
+
+                                $data['text'] = trim($data['text']);
+
+                                if (!empty($data['text']))
+                                {
+                                    // вырезаем большие отступы
+                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n\n", $data['text']);
+
                                     $Post->addItem(
                                         new NewsPostItem(
-                                            NewsPostItem::TYPE_HEADER,
+                                            NewsPostItem::TYPE_TEXT,
                                             $data['text'],
                                             null,
                                             null,
-                                            $level,
+                                            null,
                                             null
                                         ));
+
+                                    if ($isFirstText)
+                                    {
+                                        $isFirstText = false;
+                                    }
                                 }
+
                                 break;
 
                             case 'link':
@@ -1011,54 +1136,6 @@ class ParserCore
                                 }
                                 break;
 
-                            case 'text':
-                                // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
-                                if (
-                                    (strlen($data['text']) <= 4 && !preg_match('/[^\s.,\?\!]+/', $data['text'])) ||
-                                    empty(trim($data['text']))
-                                )
-                                {
-                                    break;
-                                }
-
-                                // реализовываем логику клиента по удалению дублей дескрипшена из текста
-                                // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
-                                // поэтому подстраховываемся и усиливаем уникальность текста (кол-во символов)
-                                if ($i == 1 & strlen($description) > 10)
-                                {
-                                    //                                    echo 'text = ' . $data['text'];
-                                    //                                    echo PHP_EOL;
-                                    //                                    echo PHP_EOL;
-                                    //                                    echo 'desc = ' . $description;
-                                    //                                    echo PHP_EOL;
-                                    $data['text'] = str_replace(trim($description), '', $data['text']);
-                                }
-
-                                // пропускаем текст, если он такой же как дескрипшен
-                                if ($data['text'] === $description)
-                                {
-                                    break;
-                                }
-
-                                $data['text'] = trim($data['text']);
-
-                                if (!empty($data['text']))
-                                {
-                                    // вырезаем большие отступы
-                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n\n", $data['text']);
-
-                                    $Post->addItem(
-                                        new NewsPostItem(
-                                            NewsPostItem::TYPE_TEXT,
-                                            $data['text'],
-                                            null,
-                                            null,
-                                            null,
-                                            null
-                                        ));
-                                }
-
-                                break;
 
                             case 'video':
                                 if (!empty($data['value']))
@@ -2719,7 +2796,14 @@ class ParserCore
         // считаем что также лимит = 1
         if (defined('CORE_PARSER_DEBUG_EXTERNAL'))
         {
-            $realLimit = 1;
+            if (defined('CORE_PARSER_LIMIT_ITEMS_EXTERNAL'))
+            {
+                $realLimit = CORE_PARSER_LIMIT_ITEMS_EXTERNAL;
+            }
+            else
+            {
+                $realLimit = 1;
+            }
         }
 
 
@@ -3052,5 +3136,10 @@ class ParserCore
         {
             echo $selector . ' => ' . $this->getAttrFromSelector($selector) . PHP_EOL;
         }
+    }
+
+    public function getVersion()
+    {
+        return self::VERSION;
     }
 }
