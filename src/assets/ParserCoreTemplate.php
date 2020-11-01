@@ -81,6 +81,9 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
 
                 // пауза между запросами в секундах (включается только, если сайт начинает блокировку)
                 //                'pause'       => 0,
+
+                // заменяем переводы строк пробелами (есть сайты, где не ставят пробелы после перевода строки)
+                // 'transform_new_line_to_space' => true
             ],
 
             // настройки витрины (режим RSS)

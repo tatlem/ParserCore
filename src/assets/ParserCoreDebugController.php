@@ -10,7 +10,7 @@ use yii\console\Controller;
 // данная строка должна быть всегда закомментирована, если не идет проверка
 //define('CORE_PARSER_DEBUG_EXTERNAL', 0);
 // кол-во парсеров
-//define('CORE_PARSER_LIMIT_ITEMS_EXTERNAL', 2);
+//define('CORE_PARSER_LIMIT_ITEMS_EXTERNAL', 1);
 
 class ParserCoreDebugController extends Controller
 {
@@ -69,7 +69,15 @@ class ParserCoreDebugController extends Controller
                     continue;
                 }
 
-                echo ($i + 1) . '. ' . $pathinfo['filename'] . ' => ';
+                $i++;
+
+                // если надо пропустить какие-то парсеры
+                //                if ($i <= 153)
+                //                {
+                //                    continue;
+                //                }
+
+                echo $i . '. ' . $pathinfo['filename'] . ' => ';
 
                 $class = 'app\components\parser\\news\\' . $pathinfo['filename'];
 
@@ -95,9 +103,7 @@ class ParserCoreDebugController extends Controller
                     echo "FAILED: " . $pathinfo['filename'];
                     echo ", error: " . $t->getMessage() . PHP_EOL;
                 }
-
                 //                echo PHP_EOL;
-                $i++;
             }
         }
 

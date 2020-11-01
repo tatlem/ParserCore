@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.3.12';
+    private const VERSION = '1.4.0';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -452,6 +452,30 @@ class ParserCore
         }
     }
 
+    protected function stripTags(string $html, array $allowedTags = [])
+    : string {
+        // прежде, чем вырезать теги, нужно компенсировать между ними пробелы
+        $html = str_replace('</div>', ' </div>', $html);
+        $html = str_replace('</p>', ' </p>', $html);
+        $html = str_replace('</li>', ' </li>', $html);
+        $html = str_replace('</td>', ' </td>', $html);
+
+        // а также заменить переводы строк пробелами, если указано в настройках
+        // для сайтов, которые не ставят пробелы после перевода строки в тексте
+        if (!empty($this->config['site']['transform_new_line_to_space']) && $this->config['site']['transform_new_line_to_space'] === true)
+        {
+            $html = str_replace("\r", ' ', $html);
+            $html = str_replace("\n", ' ', $html);
+        }
+
+        $stripped = strip_tags($html, $allowedTags);
+
+        // сжимаем много пробелов в один
+        $stripped = preg_replace("/[ ]{2,}/", " ", $stripped);
+
+        return $stripped;
+    }
+
     /**
      * Получение списка элементов из витрины
      *
@@ -575,7 +599,7 @@ class ParserCore
 
             if (!empty($elTitleData))
             {
-                $elTitle = strip_tags($elTitleData);
+                $elTitle = $this->stripTags($elTitleData);
             }
 
             if (!empty($elLinkData))
@@ -585,7 +609,7 @@ class ParserCore
 
             if (!empty($elDescriptionData))
             {
-                $elDescription = strip_tags($elDescriptionData);
+                $elDescription = $this->stripTags($elDescriptionData);
             }
 
             if (!empty($elImageData))
@@ -923,6 +947,7 @@ class ParserCore
                 // Текст начинает обрезаться с 200-го символа и до первой попавшейся точки. Другие знаки, кроме точки игнорируются (,!*? и т.п.).
                 if (empty($description) && !empty($cardItem['textHtml']))
                 {
+                    // вырезаем все теги
                     $rawText = strip_tags($cardItem['textHtml']);
 
                     // только если текст большой
@@ -937,7 +962,6 @@ class ParserCore
                     {
                         $description = $rawText;
                     }
-                    //                    $description = str_replace("\n", '', $description);
                 }
 
                 // очищяем дескр от лишних символов
@@ -1060,9 +1084,10 @@ class ParserCore
                                 break;
 
                             case 'text':
+                                //                                echo strlen($data['text']) . ' - ';
                                 // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
                                 if (
-                                    (strlen($data['text']) <= 4 && !preg_match('/[^\s.,\?\!]+/', $data['text'])) ||
+                                    (strlen($data['text']) <= 4 && preg_match('/[\s\.,\?\!]+/', $data['text'])) ||
                                     empty(trim($data['text']))
                                 )
                                 {
@@ -1086,7 +1111,7 @@ class ParserCore
                                 if (!empty($data['text']))
                                 {
                                     // вырезаем большие отступы
-                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n\n", $data['text']);
+                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n", $data['text']);
 
                                     $Post->addItem(
                                         new NewsPostItem(
@@ -1285,7 +1310,7 @@ class ParserCore
 
                 if (!empty($elDescriptionData))
                 {
-                    $elDescription = strip_tags($elDescriptionData);
+                    $elDescription = $this->stripTags($elDescriptionData);
                 }
 
                 if (!empty($elDateData))
@@ -1518,18 +1543,8 @@ class ParserCore
         // подменяем цитаты
         $html = $this->getHtmlWithSubstitutedQuotes($html);
 
-        // коррекция тегов, чтобы слова не склеивались после вырезки тегов
-        // (в частности нужно добавить пробелы перед <td> и <li>, чтобы текст не сливался
-        $html = str_replace('<td>', '<td> ', $html);
-        $html = str_replace('</td>', ' </td>', $html);
-        $html = str_replace('<li>', '<li> ', $html);
-        $html = str_replace('</li>', ' </li>', $html);
-        $html = str_replace('</p>', ' </p>', $html);
-        $html = str_replace('<br>', ' ', $html);
-        $html = str_replace('<br/>', ' ', $html);
-
-        // вырезаем все ненужные теги, кроме разрешенных в allowedTags
-        $html = strip_tags($html, $this->allowedTags);
+        // оставляем только нужные теги
+        $html = $this->stripTags($html, $this->allowedTags);
 
         return $html;
     }
