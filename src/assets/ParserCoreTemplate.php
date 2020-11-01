@@ -126,6 +126,12 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // (обязательный)
                 'url'                 => '',
 
+                // URL для навигации по страницам
+                // вместо $page - подставляется номер страницы
+                // например: /vitrina/page/$page
+                // (опциональный)
+                //                'url-page'            => '/vitrina/page/$page',
+
                 // css селектор для контейнера витрины
                 // (обязательный)
                 'container'           => '',

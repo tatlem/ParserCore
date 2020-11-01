@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.4.0';
+    private const VERSION = '1.5.0';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -268,6 +268,12 @@ class ParserCore
             // URL где находится витрина
             'url'                 => '/',
 
+            // URL для навигации по страницам
+            // вместо $page - подставляется номер страницы
+            // например: /vitrina/page/$page
+            // (опциональный)
+            'url-page'            => '/vitrina/page/$page',
+
             // css селектор для контейнера витрины
             //  (обязательный)
             'container'           => '',
@@ -403,15 +409,6 @@ class ParserCore
         // опциональные свойства элемента (date, description) должны быть заполнены хотя бы в одном месте
         if ($this->mode === 'rss')
         {
-            // @deprecated дескрипшен возьмем из тайтла
-            //            if (
-            //                empty($this->config['rss']['element-description']) &&
-            //                empty($this->config['element']['element-description'])
-            //            )
-            //            {
-            //                throw new Exception("Необходимо заполнить element-description или в витрине, или в карточке");
-            //            }
-
             // дата
             if (
                 empty($this->config['rss']['element-date']) &&
@@ -527,15 +524,71 @@ class ParserCore
 
         static::showLog('- разбираем витрину на элементы по CSS-селектору "' . $vitrinaSelector . ' ' . $vitrinaElSelector . '"...');
 
-        if ($this->mode == 'rss')
+
+        // пагинация
+        if ($this->mode != 'rss' && !empty($this->config['list']['url-page']))
         {
-            $elementsData = $this->getElementsDataFromRss($listPageData, $this->config['rss']['element'], 'node', $this->itemsLimit);
+            if (strpos($this->config['list']['url-page'], '$page') === false)
+            {
+                throw new Exception("Указан ['list']['url-page'], но не указан \$page ");
+            }
+
+            $page         = 1;
+            $elementsData = [];
+
+            while ($page < 5)
+            {
+                $pageUrl = $this->getUrl(str_replace('$page', $page, $this->config['list']['url-page']));
+
+                if ($page == 1)
+                {
+                    $elementsDataPage = $this->getElementsDataFromHtml($listPageData, $this->config['list']['container'], $this->config['list']['element'], 'html');
+                }
+                else
+                {
+                    $listPageData     = self::getPage($pageUrl);
+                    $elementsDataPage = $this->getElementsDataFromHtml($listPageData, $this->config['list']['container'], $this->config['list']['element'], 'html');
+                }
+
+                if (!empty($elementsDataPage))
+                {
+                    $elementsData = array_merge($elementsData, $elementsDataPage);
+                }
+                else
+                {
+                    break;
+                }
+
+                if (count($elementsData) >= $this->itemsLimit)
+                {
+                    if ($this->debug >= 1)
+                    {
+                        $elementsData = array_splice($elementsData, 0, $this->itemsLimit);
+                    }
+
+                    break;
+                }
+
+
+                $page++;
+            }
         }
+        // без пагинации
         else
         {
-            $elementsData = $this->getElementsDataFromHtml($listPageData, $this->config['list']['container'], $this->config['list']['element'], 'html');
-            $elementsData = array_splice($elementsData, 0, $this->itemsLimit);
+            if ($this->mode == 'rss')
+            {
+                $elementsData = $this->getElementsDataFromRss($listPageData, $this->config['rss']['element'], 'node', $this->itemsLimit);
+            }
+            else
+            {
+                $elementsData = $this->getElementsDataFromHtml($listPageData, $this->config['list']['container'], $this->config['list']['element'], 'html');
+                $elementsData = array_splice($elementsData, 0, $this->itemsLimit);
+            }
         }
+
+
+        //        var_dump(count($elementsData));
 
         if (empty($elementsData))
         {
