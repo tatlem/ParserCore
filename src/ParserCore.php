@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.5.3';
+    private const VERSION = '1.5.4';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -1698,6 +1698,12 @@ class ParserCore
 
                 case 'img':
                     $imgUrl = $this->getUrl($element->getAttribute('src'));
+
+                    // бывают картинки в атрибуте data-src
+                    if (empty($imgUrl))
+                    {
+                        $imgUrl = $this->getUrl($element->getAttribute('data-src'));
+                    }
 
                     // в src бывают встроенные картинки - фиксим
                     // нашли встроенное
