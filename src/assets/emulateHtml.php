@@ -2,6 +2,38 @@
 // крутые html примеры для теста https://www.htmhell.dev/1/
 
 return [
+    'https://test/spaces' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+
+
+
+<div id="container">
+    <div id="desc">desc</div>
+        
+    <div id="text">
+        <div>
+            Lorem ipsum     dolor sit.<br><br>
+            Lorem ipsum dolor sit amet.
+        </div>
+        <p>Параграф 1</p><p>Параграф 2</p>
+        <p>Параграф 3</p><p>Параграф 4 start <p>inside</p> 4 end<br><br></p>
+        
+        
+        
+        <p>Параграф 5<br>Текст 5-1<br><br>Текст 5-2</p>
+        
+        
+        
+        <p>Параграф 6</p>
+    </div>
+</div>
+</body>
+</html>
+
+HTML,
+
     'https://test/desc-vs-text' => <<<'HTML'
 <!DOCTYPE html>
 <html>
@@ -534,11 +566,14 @@ HTML
 <html>
 <body>
 <div id="container">
+<div class="item">
+    <a href="https://test/spaces">отступы</a>
+</div>
 <div class="item1">
     <a href="https://test/desc-vs-text">дескр против текста</a>
     <div class="desc">тот же самый дескр.</div>
 </div>
-<div class="item">
+<div class="item1">
     <a href="https://test/spaces-in-attr">пробелы в атрибутах</a>
     <img1 src="/ava.jpg" alt="avava"/>
 </div>

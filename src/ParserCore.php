@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.5.0';
+    private const VERSION = '1.5.1';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -454,9 +454,16 @@ class ParserCore
 
     protected function stripTags(string $html, array $allowedTags = [])
     : string {
+        // удаляем все переводы строк, чтобы поставить свои
+        $html = str_replace("\n", '', $html);
+        $html = str_replace("\r", '', $html);
+
         // прежде, чем вырезать теги, нужно компенсировать между ними пробелы
+        // и в случае разбиения на параграфы добавить
         $html = str_replace('</div>', ' </div>', $html);
-        $html = str_replace('</p>', ' </p>', $html);
+        $html = str_replace('</p>', " </p>\n\n", $html);
+        $html = str_replace('<br>', " <br>\n", $html);
+        $html = str_replace('<br/>', " <br/>\n", $html);
         $html = str_replace('</li>', ' </li>', $html);
         $html = str_replace('</td>', ' </td>', $html);
 
@@ -1021,7 +1028,7 @@ class ParserCore
                 }
 
                 // очищяем дескр от лишних символов
-                $description = $this->getCleanText($description);
+                //                $description = $this->getCleanText($description);
 
 
                 // title
@@ -1113,7 +1120,7 @@ class ParserCore
                                     if ($isFirstHeader & strlen($description) > 10)
                                     {
                                         // очищяем текст от лишних символов, чтобы он соответствовал дескр
-                                        $data['text'] = $this->getCleanText($data['text']);
+                                        //                                        $data['text'] = $this->getCleanText($data['text']);
 
                                         // вырезаем дескр из текста
                                         $data['text'] = str_replace($description, '', $data['text']);
@@ -1140,7 +1147,6 @@ class ParserCore
                                 break;
 
                             case 'text':
-                                //                                echo strlen($data['text']) . ' - ';
                                 // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
                                 if (
                                     (strlen($data['text']) <= 4 && preg_match('/[\s\.,\?\!]+/', $data['text'])) ||
@@ -1150,24 +1156,24 @@ class ParserCore
                                     break;
                                 }
 
+
                                 // реализовываем логику клиента по удалению дублей дескрипшена из текста
                                 // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
                                 // поэтому подстраховываемся и усиливаем уникальность дескр (кол-во символов)
                                 if ($isFirstText & strlen($description) > 10)
                                 {
                                     // очищяем текст от лишних символов, чтобы он соответствовал дескр
-                                    $data['text'] = $this->getCleanText($data['text']);
+                                    //                                    $data['text'] = $this->getCleanText($data['text']);
 
                                     // вырезаем дескр из текста
                                     $data['text'] = str_replace($description, '', $data['text']);
                                 }
 
-                                $data['text'] = trim($data['text']);
 
                                 if (!empty($data['text']))
                                 {
                                     // вырезаем большие отступы
-                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n", $data['text']);
+                                    //                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n", $data['text']);
 
                                     $Post->addItem(
                                         new NewsPostItem(
