@@ -94,26 +94,10 @@ HTML,
 
     <p>test1</p><a href="/asd">link</a><p>test2</p><p>test3</p>
     <p>test4</p>
-    
-    
-    
-    
-    
-    Я
-    тут
-    
-    что-то
-    
-    
-    уже
-    
-    
-    
-    
-        написал
-    
+        
     <img src=" /normal.jpg 
     " />
+    <img class="img" src="/uploads/news/2020/10.2020/5/1/land-rover-baby-defender-renderings (1).jpg">
     <img src="/with spaces.jpg" />
     <a href=" /some ">some</a>
     <a href="/some2%20">some</a>
@@ -566,14 +550,14 @@ HTML
 <html>
 <body>
 <div id="container">
-<div class="item">
+<div class="item1">
     <a href="https://test/spaces">отступы</a>
 </div>
 <div class="item1">
     <a href="https://test/desc-vs-text">дескр против текста</a>
     <div class="desc">тот же самый дескр.</div>
 </div>
-<div class="item1">
+<div class="item">
     <a href="https://test/spaces-in-attr">пробелы в атрибутах</a>
     <img1 src="/ava.jpg" alt="avava"/>
 </div>

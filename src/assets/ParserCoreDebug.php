@@ -146,7 +146,7 @@ class ParserCoreDebug extends ParserCore implements ParserInterface
                     // !должен содержать конечный аттрибут src! (например: img.main-image[src])
                     // (заполняется только, если отсутствует в витрине)
                     //                    'element-image'       => '.img[style]',
-                    'element-image'       => '.img',
+                    'element-image'       => '.img[src]',
 
                     // css-селектор для основного текста
                     // (для заполнения модели NewsPostItem)

@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.5.1';
+    private const VERSION = '1.5.2';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -2456,6 +2456,13 @@ class ParserCore
         {
             $url = $this->encodeRusUrl($url);
         }
+
+        // кодируем пробелы
+        if (strpos($url, ' ') !== false)
+        {
+            $url = str_replace(' ', '%20', $url);
+        }
+
 
         // убираем пробелы в конце (%20 %0A)
         if (strpos($url, '%20') !== false ||
