@@ -1182,6 +1182,7 @@ class ParserCore
                                 if (!empty($data['text']))
                                 {
                                     // вырезаем большие отступы
+                                    // @issue работает не для всех сайтов
                                     //                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n", $data['text']);
 
                                     $Post->addItem(
