@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.5.2';
+    private const VERSION = '1.5.3';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -230,7 +230,7 @@ class ParserCore
             'pause'                       => 0,
 
             // заменяем переводы строк пробелами (есть сайты, где не ставят пробелы после перевода строки)
-            'transform_new_line_to_space' => true
+            'transform_new_line_to_space' => true,
         ],
 
         // настройки витрины (режим RSS)
@@ -1028,7 +1028,10 @@ class ParserCore
                 }
 
                 // очищяем дескр от лишних символов
-                //                $description = $this->getCleanText($description);
+                //                if (!empty($this->config['site']['remove_desc_from_text']) && $this->config['site']['remove_desc_from_text'] === true)
+                //                {
+                //                    $description = $this->getCleanText($description);
+                //                }
 
 
                 // title
@@ -1120,10 +1123,13 @@ class ParserCore
                                     if ($isFirstHeader & strlen($description) > 10)
                                     {
                                         // очищяем текст от лишних символов, чтобы он соответствовал дескр
-                                        //                                        $data['text'] = $this->getCleanText($data['text']);
+                                        //                                        if (!empty($this->config['site']['remove_desc_from_text']) && $this->config['site']['remove_desc_from_text'] === true)
+                                        //                                        {
+                                        //                                            $data['text'] = $this->getCleanText($data['text']);
+                                        //                                        }
 
-                                        // вырезаем дескр из текста
-                                        $data['text'] = str_replace($description, '', $data['text']);
+                                        // вырезаем дескр из заголовка
+                                        $data['text'] = str_replace(trim($description), '', $data['text']);
                                     }
 
                                     if (!empty($data['text']))
@@ -1163,10 +1169,13 @@ class ParserCore
                                 if ($isFirstText & strlen($description) > 10)
                                 {
                                     // очищяем текст от лишних символов, чтобы он соответствовал дескр
-                                    //                                    $data['text'] = $this->getCleanText($data['text']);
+                                    //                                    if (!empty($this->config['site']['clean_text']) && $this->config['site']['clean_text'] === true)
+                                    //                                    {
+                                    //                                        $data['text'] = $this->getCleanText($data['text']);
+                                    //                                    }
 
                                     // вырезаем дескр из текста
-                                    $data['text'] = str_replace($description, '', $data['text']);
+                                    $data['text'] = str_replace(trim($description), '', $data['text']);
                                 }
 
 
