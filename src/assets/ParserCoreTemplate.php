@@ -227,6 +227,24 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
         $items = $Parser->getItems();
         $posts = $Parser->getCards(array_keys($items));
 
+        //        if (!empty($posts))
+        //        {
+        //            foreach ($posts as $post)
+        //            {
+        //                if (!empty($post->items))
+        //                {
+        //                    foreach ($post->items as $postItem)
+        //                    {
+        //                        // вырезаем из текста большие зазоры
+        //                        if ($postItem->type == NewsPostItem::TYPE_TEXT)
+        //                        {
+        //                            $postItem->text = preg_replace("/[\r\n ]{2,}/", "\n\n", $postItem->text);
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+
         return $posts;
     }
 }
