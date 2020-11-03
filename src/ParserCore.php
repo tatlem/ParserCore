@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.5.4';
+    private const VERSION = '1.6.0';
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -343,6 +343,10 @@ class ParserCore
             // css-селекторы которые будут вставлятся в конец текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
             // (опционально)
             'element-text-after'  => '',
+
+            // протокол и домен для карточки элемента
+            // (опциональный)
+            'url'         => '',
         ]
     ];
 
@@ -2467,6 +2471,13 @@ class ParserCore
     function getUrl(?string $url
     )
     : ?string {
+        // общий URL сайта и карточки может отличаться.
+        // указываем в настройках element, чтобы можно было правильно составлять относительные URL
+        if (!empty($this->config['element']['url']) && !empty($this->currentElement) && $this->currentElement == 'element')
+        {
+            $this->siteUrl = $this->config['element']['url'];
+        }
+
         // кодируем кириллицу в ссылках
         if (!empty($url))
         {

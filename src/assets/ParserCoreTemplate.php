@@ -209,6 +209,10 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // css-селекторы которые будут вставлятся в конец текста новости element-text (селекторы ищутся от корня, т.е. не зависят от container)
                 // (опционально)
                 'element-text-after'  => '',
+
+                // протокол и домен для карточки элемента
+                // (опциональный)
+                'url'                 => '',
             ]
         ];
 
