@@ -79,7 +79,9 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.6.0';
+    private const VERSION = '1.7.0';
+    // требуемая парсером версия ядра
+    private array $parserCoreVerArr;
     // доступные режимы работы парсера
     private const  MODE_TYPES = ['desktop', 'rss'];
     // путь до папки со вспомогательными файлами
@@ -346,7 +348,7 @@ class ParserCore
 
             // протокол и домен для карточки элемента
             // (опциональный)
-            'url'         => '',
+            'url'                 => '',
         ]
     ];
 
@@ -438,15 +440,17 @@ class ParserCore
 
         $this->keysIsNotEmptyInAnotherArray($requiredProps, $props);
 
-        if (0 && 'проверка совместимости с версией ядра')
+        if (1 && 'проверка совместимости с версией ядра')
         {
             $coreVer       = self::getVersionArray(self::VERSION);
             $parserCoreVer = self::getVersionArray(static::FOR_CORE_VERSION);
 
-            if (!($coreVer[0] === $parserCoreVer[0]))
+            $this->parserCoreVerArr = $parserCoreVer;
+
+            if (!($coreVer[0] === $parserCoreVer[0] && $coreVer[1] >= $parserCoreVer[1]))
             {
                 throw new Exception('Несовместимая версия ядра. Обновите, пожалуйста, зависимости через composer update. ' . PHP_EOL . '
-                    Требуется ядро ParserCore' . $parserCoreVer[0]);
+                    Требуется ядро ParserCore ' . static::FOR_CORE_VERSION);
             }
         }
 
@@ -1284,6 +1288,28 @@ class ParserCore
                 }
 
                 $posts[] = $Post;
+            }
+        }
+
+        // 1.7+
+        if ($this->parserCoreVerArr[0] == 1 && $this->parserCoreVerArr[1] >= 7)
+        {
+            if (!empty($posts))
+            {
+                foreach ($posts as $post)
+                {
+                    if (!empty($post->items))
+                    {
+                        foreach ($post->items as $postItem)
+                        {
+                            // вырезаем из текста большие зазоры
+                            if ($postItem->type == NewsPostItem::TYPE_TEXT)
+                            {
+                                $postItem->text = preg_replace("/[\r\n ]{2,}/", "\n\n", $postItem->text);
+                            }
+                        }
+                    }
+                }
             }
         }
 
