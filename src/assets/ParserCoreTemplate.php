@@ -17,7 +17,7 @@ namespace app\components\parser\news;
 use fingli\ParserCore\ParserCore;
 use app\components\parser\ParserInterface;
 
-// part 3 approved by
+// part 4
 class CORE_XXX_Parser extends ParserCore implements ParserInterface
 {
     const USER_ID = 2;

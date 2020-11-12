@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.8.1';
+    private const VERSION = '1.8.2';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -1051,6 +1051,8 @@ class ParserCore
                     $title = $description;
                 }
 
+                $description = trim($description);
+
                 if (empty($description) && !empty($title))
                 {
                     $description = $title;
@@ -1078,8 +1080,6 @@ class ParserCore
                 {
                     $image = $listItem['image'];
                 }
-
-                $description = trim($description);
 
 
                 // Create Post
