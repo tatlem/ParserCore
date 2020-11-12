@@ -24,7 +24,7 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
     const FEED_ID = 2;
     // поддерживаемая версия ядра
     // (НЕ ИЗМЕНЯТЬ САМОСТОЯТЕЛЬНО!)
-    const FOR_CORE_VERSION = '1.7';
+    const FOR_CORE_VERSION = '1.8';
     // дебаг-режим (только для разработки) - выводит информацию о действиях парсера
     // 0 - отключен
     // 1 - включен
@@ -218,6 +218,29 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
 
         parent::__construct();
     }
+
+    //    protected function getCardTextHtml(string $html)
+    //    : string {
+    //        // добавляем css-селекторы в начало и/или в конец текста
+    //        $html = $this->getHtmlWithInsertedSelectors($html);
+    //
+    //        // вырезаем игнорируемые теги
+    //        $html = $this->getHtmlWithoutIgnoredSelectors($html);
+    //
+    //        // подменяем цитаты
+    //        $html = $this->getHtmlWithSubstitutedQuotes($html);
+    //
+    //        $html = str_replace('<p></p>', '', $html);
+    //        $html = str_replace('<p><br></p>', '', $html);
+    //        $html = str_replace('<p>&nbsp;</p>', '', $html);
+    //        $html = str_replace('<p> </p>', '', $html);
+    //        $html = str_replace('<p> </p>', '', $html);
+    //
+    //        // оставляем только нужные теги
+    //        $html = $this->stripTags($html, $this->allowedTags);
+    //
+    //        return $html;
+    //    }
 
     public static function run()
     : array

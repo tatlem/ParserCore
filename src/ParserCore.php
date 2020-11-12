@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.7.0';
+    private const VERSION = '1.8.0';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -449,8 +449,7 @@ class ParserCore
 
             if (!($coreVer[0] === $parserCoreVer[0] && $coreVer[1] >= $parserCoreVer[1]))
             {
-                throw new Exception('Несовместимая версия ядра. Обновите, пожалуйста, зависимости через composer update. ' . PHP_EOL . '
-                    Требуется ядро ParserCore ' . static::FOR_CORE_VERSION);
+                throw new Exception('Несовместимая версия ядра. Обновите, пожалуйста, зависимости через composer update. ' . PHP_EOL . 'Требуется ядро ParserCore ' . static::FOR_CORE_VERSION . ' (узнать версию ядра можно в режиме дебаг или в константе VERSION файла /vendor/fingli/parser-core/src/ParserCore.php)');
             }
         }
 
@@ -756,12 +755,12 @@ class ParserCore
             echo "------ / itemsParsed (getCards) (before normalize) -----\033[44m" . PHP_EOL;
         }
 
-        static::showLog(PHP_EOL . '----------------------------------');
-        static::showLog('  нормализация данных (объединение одинаковых)...');
-        static::showLog('----------------------------------');
-
-        $itemsParsed = $this->normalizeItems($itemsParsed);
-        static::showLog('Сделано');
+        //        static::showLog(PHP_EOL . '----------------------------------');
+        //        static::showLog('  нормализация данных (объединение одинаковых text)...');
+        //        static::showLog('----------------------------------');
+        //
+        //        $itemsParsed = $this->normalizeItems($itemsParsed);
+        //        static::showLog('Сделано');
 
         if ($this->debug >= 3)
         {
@@ -1125,7 +1124,7 @@ class ParserCore
                                         break;
                                     }
 
-                                    // реализовываем логику клиента по удалению дублей дескрипшена из заголовка
+                                    // реализуем логику клиента по удалению дублей дескрипшена из заголовка
                                     // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
                                     // поэтому подстраховываемся и усиливаем уникальность дескр (кол-во символов)
                                     if ($isFirstHeader & strlen($description) > 10)
@@ -1162,26 +1161,20 @@ class ParserCore
 
                             case 'text':
                                 // вырезаем текст меньше 4 символов длиной, если он содержит ТОЛЬКО [.,\s?!]
-                                if (
-                                    (strlen($data['text']) <= 4 && preg_match('/[\s\.,\?\!]+/', $data['text'])) ||
-                                    empty(trim($data['text']))
-                                )
-                                {
-                                    break;
-                                }
+                                //                                if (
+                                //                                    (strlen($data['text']) <= 4 && preg_match('/[\s\.,\?\!]+/', $data['text'])) ||
+                                //                                    empty(trim($data['text']))
+                                //                                )
+                                //                                {
+                                //                                    break;
+                                //                                }
 
 
-                                // реализовываем логику клиента по удалению дублей дескрипшена из текста
+                                // реализуем логику клиента по удалению дублей дескрипшена из текста
                                 // @issue - если из "что-то. бла-бла-бла что-то. бла-бла-бла" вырезать "что-то.", то получится "бла-бла-бла бла-бла-бла"
                                 // поэтому подстраховываемся и усиливаем уникальность дескр (кол-во символов)
                                 if ($isFirstText & strlen($description) > 10)
                                 {
-                                    // очищяем текст от лишних символов, чтобы он соответствовал дескр
-                                    //                                    if (!empty($this->config['site']['clean_text']) && $this->config['site']['clean_text'] === true)
-                                    //                                    {
-                                    //                                        $data['text'] = $this->getCleanText($data['text']);
-                                    //                                    }
-
                                     // вырезаем дескр из текста
                                     $data['text'] = str_replace(trim($description), '', $data['text']);
                                 }
@@ -1189,10 +1182,6 @@ class ParserCore
 
                                 if (!empty($data['text']))
                                 {
-                                    // вырезаем большие отступы
-                                    // @issue работает не для всех сайтов
-                                    //                                    $data['text'] = preg_replace("/[\r\n ]{2,}/", "\n", $data['text']);
-
                                     $Post->addItem(
                                         new NewsPostItem(
                                             NewsPostItem::TYPE_TEXT,
@@ -1296,22 +1285,67 @@ class ParserCore
         {
             if (!empty($posts))
             {
+                $postsNew = [];
+
                 foreach ($posts as $post)
                 {
                     if (!empty($post->items))
                     {
+                        $postItemsNew = [];
+
                         foreach ($post->items as $postItem)
                         {
-                            // вырезаем из текста большие зазоры
+                            // разбиваем текстовый итем на несколько итемов по абзацам
                             if ($postItem->type == NewsPostItem::TYPE_TEXT)
                             {
-                                $postItem->text = preg_replace("/[\r\n ]{2,}/", "\n\n", $postItem->text);
+                                $paragraphs = explode("\n\n", $postItem->text);
+
+                                if (!empty($paragraphs))
+                                {
+                                    foreach ($paragraphs as $paragraph)
+                                    {
+                                        $paragraph = str_replace(' ', ' ', $paragraph);
+                                        $paragraph = trim($paragraph);
+
+                                        // пропускаем параграфы без инфы (содержащие только знаки препинания)
+                                        if (strlen($paragraph) <= 7)
+                                        {
+                                            if (empty(trim($paragraph, ' !,.:;?\t\n\r\0\x0B\xC2\xA0')))
+                                            {
+                                                continue;
+                                            }
+                                        }
+
+                                        $paragraph = preg_replace("/[\r\n ]{2,}/", "\n", $paragraph);
+
+                                        if (!empty($paragraph))
+                                        {
+                                            $postItemsNew[] = new NewsPostItem(
+                                                NewsPostItem::TYPE_TEXT,
+                                                $paragraph,
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $postItemsNew[] = $postItem;
                             }
                         }
+
+                        $post->items = $postItemsNew;
                     }
+
+                    $postsNew[] = $post;
                 }
             }
         }
+
 
         return $posts;
     }

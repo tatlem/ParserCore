@@ -10,6 +10,8 @@
 
 ### Для запуска чекера парсеров
 
-```php yii parser-core-debug/check-parsers X```
+```php yii parser-core-debug/check-parsers <from> <to>``` 
 
-, где X = кол-во парсеров для проверки
+### Для запуска чекера лид vs текст
+
+```php yii parser-core-debug/check-desc-vs-text <from> <to>``` 

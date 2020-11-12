@@ -10,7 +10,7 @@ use yii\console\Controller;
 // 0 - отключаем режим дебага у всех парсеров, 1+ - включаем
 // данная строка должна быть всегда закомментирована, если не идет проверка
 define('CORE_PARSER_DEBUG_EXTERNAL', 0);
-//кол - во парсеров
+//кол - во новостей у парсеров
 define('CORE_PARSER_LIMIT_ITEMS_EXTERNAL', 3);
 
 class ParserCoreDebugController extends Controller
