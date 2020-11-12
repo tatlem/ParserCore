@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.8.0';
+    private const VERSION = '1.8.1';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -1079,6 +1079,8 @@ class ParserCore
                     $image = $listItem['image'];
                 }
 
+                $description = trim($description);
+
 
                 // Create Post
                 $Post = new NewsPost(
@@ -1136,7 +1138,7 @@ class ParserCore
                                         //                                        }
 
                                         // вырезаем дескр из заголовка
-                                        $data['text'] = str_replace(trim($description), '', $data['text']);
+                                        $data['text'] = str_replace($description, '', $data['text']);
                                     }
 
                                     if (!empty($data['text']))
@@ -1176,7 +1178,7 @@ class ParserCore
                                 if ($isFirstText & strlen($description) > 10)
                                 {
                                     // вырезаем дескр из текста
-                                    $data['text'] = str_replace(trim($description), '', $data['text']);
+                                    $data['text'] = str_replace($description, '', $data['text']);
                                 }
 
 
@@ -1275,6 +1277,8 @@ class ParserCore
                         $i++;
                     }
                 }
+
+                $Post->description = str_replace("\n", '', $Post->description);
 
                 $posts[] = $Post;
             }
