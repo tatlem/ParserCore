@@ -277,6 +277,29 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
         //            }
         //        }
 
+        // вырезаем дубли desc vs text
+        //        if (!empty($posts))
+        //        {
+        //            foreach ($posts as $post)
+        //            {
+        //                $postItems = [];
+        //
+        //                if (!empty($post->items))
+        //                {
+        //                    foreach ($post->items as $postItem)
+        //                    {
+        //                        if (!empty($postItem->text) &&
+        //                            strpos(trim($post->description), trim($postItem->text)) === false)
+        //                        {
+        //                            $postItems[] = $postItem;
+        //                        }
+        //                    }
+        //                }
+        //
+        //                $post->items = $postItems;
+        //            }
+        //        }
+
         return $posts;
     }
 }
