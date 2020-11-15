@@ -95,6 +95,9 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // (обязательный)
                 'url'                 => '',
 
+                // кодировка, если не utf-8
+                //                'encoding' => 'windows-1251',
+
                 // css селектор для элемента витрины (желательно от корня)
                 // (обязательный)
                 'element'             => 'rss > channel > item',
