@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.11.0';
+    private const VERSION = '1.12.0';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -2745,6 +2745,12 @@ class ParserCore
                 {
                     $Curl->setOption(CURLOPT_ENCODING, $this->config['site']['encoding']);
                 }
+
+                if (!empty($this->config['site']['insecure']) && $this->config['site']['insecure'])
+                {
+                    $Curl->setOption(CURLOPT_SSL_VERIFYHOST, 0);
+                    $Curl->setOption(CURLOPT_SSL_VERIFYPEER, 0);
+                }
             }
 
             $responseHtml       = $Curl->get($url);
@@ -2753,6 +2759,13 @@ class ParserCore
 
             if ($this->debug >= 3)
             {
+                if (!empty($Curl->errorText))
+                {
+                    echo "\033[31m";
+                    echo $Curl->errorText . PHP_EOL;
+                    echo "\033[0m";
+                }
+
                 print_r($responseInfo);
                 print_r($responseHtml);
 
