@@ -84,6 +84,9 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
 
                 // заменяем переводы строк пробелами (есть сайты, где не ставят пробелы после перевода строки)
                 // 'transform_new_line_to_space' => true
+
+                // кодировка сайта (если определяется некорректно)
+                //                'encoding'    => 'UTF-8'
             ],
 
             // настройки витрины (режим RSS)

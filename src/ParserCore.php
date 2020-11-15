@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.8.2';
+    private const VERSION = '1.9.0';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -2733,6 +2733,11 @@ class ParserCore
                     {
                         $Curl->setOption(CURLOPT_USERAGENT, $this->config['site']['user_agent']);
                     }
+                }
+
+                if (!empty($this->config['site']['encoding']))
+                {
+                    $Curl->setOption(CURLOPT_ENCODING, $this->config['site']['encoding']);
                 }
             }
 
