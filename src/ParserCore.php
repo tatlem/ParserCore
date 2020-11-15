@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.13.0';
+    private const VERSION = '1.14.0';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -202,7 +202,7 @@ class ParserCore
             'url'                         => '',
 
             // кириллический URL
-            'url_cyrillic' => 'https://интернет-портал-народнаяинициатива.рф',
+            'url_cyrillic'                => 'https://интернет-портал-народнаяинициатива.рф',
 
             // использовать юзер-агенты в http запросах.
             // (можно также попробовать передать значение: "bot", если сайт не парсится)
@@ -644,8 +644,12 @@ class ParserCore
 
             if ($this->mode == 'rss')
             {
-                $elTitleData = current($this->getElementsDataFromRss('', $this->config['rss']['element-title'], 'text', -1, $elementData));
-                $elLinkData  = current($this->getElementsDataFromRss('', $this->config['rss']['element-link'], 'text', -1, $elementData));
+                if (!empty($this->config['rss']['element-title']))
+                {
+                    $elTitleData = current($this->getElementsDataFromRss('', $this->config['rss']['element-title'], 'text', -1, $elementData));
+                }
+
+                $elLinkData = current($this->getElementsDataFromRss('', $this->config['rss']['element-link'], 'text', -1, $elementData));
 
                 if (!empty($this->config['rss']['element-description']))
                 {
@@ -664,8 +668,12 @@ class ParserCore
             }
             else
             {
-                $elTitleData = current($this->getElementsDataFromHtml($elementData, '', $this->config['list']['element-title'], 'text'));
-                $elLinkData  = current($this->getElementsDataFromHtml($elementData, '', $this->config['list']['element-link']));
+                if (!empty($this->config['list']['element-title']))
+                {
+                    $elTitleData = current($this->getElementsDataFromHtml($elementData, '', $this->config['list']['element-title'], 'text'));
+                }
+
+                $elLinkData = current($this->getElementsDataFromHtml($elementData, '', $this->config['list']['element-link']));
 
                 if (!empty($this->config['list']['element-description']))
                 {
@@ -1064,6 +1072,10 @@ class ParserCore
                 {
                     $title = $listItem['title'];
                 }
+                elseif (!empty($cardItem['title']))
+                {
+                    $title = $cardItem['title'];
+                }
                 elseif (!empty($description))
                 {
                     $title = $description;
@@ -1436,6 +1448,7 @@ class ParserCore
 
         if (!empty($html))
         {
+            $elTitleData   = '';
             $elDescription = '';
             $elImage       = '';
             $elDate        = '';
@@ -1444,6 +1457,11 @@ class ParserCore
 
             if (!empty($containerData))
             {
+                if (!empty($this->config['element']['element-title']))
+                {
+                    $elTitleData = current($this->getElementsDataFromHtml($containerData, '', $this->config['element']['element-title'], 'text'));
+                }
+
                 if (!empty($this->config['element']['element-description']))
                 {
                     $elDescriptionData = current($this->getElementsDataFromHtml($containerData, '', $this->config['element']['element-description'], 'html'));
@@ -1465,6 +1483,11 @@ class ParserCore
                 }
 
                 static::showLog('-- обработка полученных данных элемента...');
+
+                if (!empty($elTitleData))
+                {
+                    $elTitle = $this->stripTags($elTitleData);
+                }
 
                 if (!empty($elDescriptionData))
                 {
@@ -1512,6 +1535,7 @@ class ParserCore
                 $elItemData = $this->getItemData($elTextHtml);
 
                 return [
+                    'title'       => $elTitle,
                     'description' => $elDescription,
                     'image'       => $elImage,
                     'date'        => $elDate,
