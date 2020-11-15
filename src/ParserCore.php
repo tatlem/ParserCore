@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.10.0';
+    private const VERSION = '1.11.0';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -464,6 +464,12 @@ class ParserCore
         // удаляем все переводы строк, чтобы поставить свои
         $html = str_replace("\n", '', $html);
         $html = str_replace("\r", '', $html);
+
+        // заменяем сдвоенные <br>
+        if ($this->parserCoreVerArr[0] == 1 && $this->parserCoreVerArr[1] >= 11)
+        {
+            $html = str_replace("<br><br>", "\n\n", $html);
+        }
 
         // прежде, чем вырезать теги, нужно компенсировать между ними пробелы
         // и в случае разбиения на параграфы добавить
