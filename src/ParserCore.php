@@ -1448,6 +1448,7 @@ class ParserCore
 
         if (!empty($html))
         {
+            $elTitle       = '';
             $elTitleData   = '';
             $elDescription = '';
             $elImage       = '';
