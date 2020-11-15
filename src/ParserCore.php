@@ -235,17 +235,20 @@ class ParserCore
             'transform_new_line_to_space' => true,
 
             // кодировка сайта (если определяется некорректно)
-            'encoding'                    => 'UTF-8'
+            'encoding'                    => 'UTF-8',
+
+            // отмена проверки на безопасность SSL со стороны CURL
+            'insecure'                    => true,
         ],
 
         // настройки витрины (режим RSS)
         'rss'        => [
             // относительный URL где находится RSS
             // (обязательный)
-            'url'      => '/rss.xml',
+            'url'                 => '/rss.xml',
 
             // кодировка, если не utf-8
-            'encoding' => 'windows-1251',
+            'encoding'            => 'windows-1251',
 
             // css селектор для элемента витрины (желательно от корня)
             // (обязательный)

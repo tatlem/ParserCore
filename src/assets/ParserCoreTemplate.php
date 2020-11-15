@@ -87,6 +87,9 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
 
                 // кодировка сайта (если определяется некорректно)
                 //                'encoding'    => 'UTF-8'
+
+                // отмена проверки на безопасность SSL со стороны CURL
+                //                'insecure' => true,
             ],
 
             // настройки витрины (режим RSS)
