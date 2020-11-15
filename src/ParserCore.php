@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.9.0';
+    private const VERSION = '1.10.0';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -2783,6 +2783,12 @@ class ParserCore
 
                         // и некоректных заголовков, неймспейсов
                         $responseHtml = $this->getCorrectedXml($responseHtml);
+
+                        // делаем перекодировку
+                        if (!empty($this->config['rss']['encoding']))
+                        {
+                            $responseHtml = mb_convert_encoding($responseHtml, 'utf-8', $this->config['rss']['encoding']);
+                        }
                     }
                     // HTML
                     else
