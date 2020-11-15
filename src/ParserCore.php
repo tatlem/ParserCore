@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.12.0';
+    private const VERSION = '1.13.0';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -200,6 +200,9 @@ class ParserCore
             // протокол и домен
             // (обязательный)
             'url'                         => '',
+
+            // кириллический URL
+            'url_cyrillic' => 'https://интернет-портал-народнаяинициатива.рф',
 
             // использовать юзер-агенты в http запросах.
             // (можно также попробовать передать значение: "bot", если сайт не парсится)
@@ -2555,6 +2558,16 @@ class ParserCore
         if (!empty($this->config['element']['url']) && !empty($this->currentElement) && $this->currentElement == 'element')
         {
             $this->siteUrl = $this->config['element']['url'];
+        }
+
+        // кириллический URL
+        if (!empty($this->config['site']['url_cyrillic']) && !empty($url))
+        {
+            // обратное преобразование
+            $url = urldecode($url);
+
+            // вырезаем ненужное из URL
+            $url = str_replace($this->config['site']['url_cyrillic'], '', $url);
         }
 
         // кодируем кириллицу в ссылках

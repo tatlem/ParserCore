@@ -53,6 +53,9 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // (обязательный)
                 'url'         => '',
 
+                // кириллический URL
+                //            'url_cyrillic' => 'https://интернет-портал-народнаяинициатива.рф',
+
                 // использовать юзер-агенты в http запросах.
                 // (опционально)
                 'user_agent'  => 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/42.0',
