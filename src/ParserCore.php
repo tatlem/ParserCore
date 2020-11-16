@@ -79,7 +79,7 @@ use wapmorgan\TimeParser\TimeParser;
 class ParserCore
 {
     // версия ядра (см. Версионирование)
-    private const VERSION = '1.14.0';
+    private const VERSION = '1.14.1';
     // требуемая парсером версия ядра
     private array $parserCoreVerArr;
     // доступные режимы работы парсера
@@ -325,6 +325,9 @@ class ParserCore
             // (все дальнейшие пути строятся относительно этого контейнера)
             // (обязательный)
             'container'           => '',
+
+            // заголовок (если не получилось взять из витрины)
+            'element-title'       => '',
 
             // css-селектор для основного текста
             // (для заполнения модели NewsPostItem)
@@ -2860,35 +2863,42 @@ class ParserCore
                     else
                     {
                         // решаем проблемы кодировки. Все должно быть переведено в utf-8
-                        $charset    = '';
-                        $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
-
-                        // нашли в заголовках
-                        if (strpos($charsetRaw, 'charset=') !== false)
+                        if (!empty($this->config['site']['encoding']))
                         {
-                            preg_match('~charset=(\'|")?(?<charset>[\w\-]*)(\'|")?~', $charsetRaw, $charsetMatches);
-
-                            // план А
-                            if (!empty($charsetMatches['charset']))
-                            {
-                                $charset = $charsetMatches['charset'];
-                            }
-                            // план В
-                            else
-                            {
-                                $charsetRaw = str_replace("text/html; charset=", "", $charsetRaw);
-                                $charsetRaw = str_replace("text/html;charset=", "", $charsetRaw);
-                                $charset    = $charsetRaw;
-                            }
+                            $charset = $this->config['site']['encoding'];
                         }
-                        // не нашли в заголовках. Ищем в контенте
                         else
                         {
-                            preg_match('/charset=([-a-z0-9_]+)/i', $responseHtml, $charsetMatches);
+                            $charset    = '';
+                            $charsetRaw = !empty($responseInfo['content_type']) ? $responseInfo['content_type'] : null;
 
-                            if (!empty($charsetMatches[1]))
+                            // нашли в заголовках
+                            if (strpos($charsetRaw, 'charset=') !== false)
                             {
-                                $charset = trim($charsetMatches[1]);
+                                preg_match('~charset=(\'|")?(?<charset>[\w\-]*)(\'|")?~', $charsetRaw, $charsetMatches);
+
+                                // план А
+                                if (!empty($charsetMatches['charset']))
+                                {
+                                    $charset = $charsetMatches['charset'];
+                                }
+                                // план В
+                                else
+                                {
+                                    $charsetRaw = str_replace("text/html; charset=", "", $charsetRaw);
+                                    $charsetRaw = str_replace("text/html;charset=", "", $charsetRaw);
+                                    $charset    = $charsetRaw;
+                                }
+                            }
+                            // не нашли в заголовках. Ищем в контенте
+                            else
+                            {
+                                preg_match('/charset=([-a-z0-9_]+)/i', $responseHtml, $charsetMatches);
+
+                                if (!empty($charsetMatches[1]))
+                                {
+                                    $charset = trim($charsetMatches[1]);
+                                }
                             }
                         }
 

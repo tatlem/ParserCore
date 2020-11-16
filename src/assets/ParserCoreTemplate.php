@@ -89,7 +89,7 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // 'transform_new_line_to_space' => true
 
                 // кодировка сайта (если определяется некорректно)
-                //                'encoding'    => 'UTF-8'
+                //                'encoding'    => 'UTF-8',
 
                 // отмена проверки на безопасность SSL со стороны CURL
                 //                'insecure' => true,
@@ -183,6 +183,9 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 // (можно несколько через запятую, если есть разные шаблоны новости)
                 // (обязательный)
                 'container'           => '',
+
+                // заголовок (если не получилось взять из витрины)
+                'element-title' => '',
 
                 // ** дальнейшие css-селекторы указываются относительно container
 
