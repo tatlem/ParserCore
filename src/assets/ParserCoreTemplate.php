@@ -17,14 +17,10 @@ namespace app\components\parser\news;
 use fingli\ParserCore\ParserCore;
 use app\components\parser\ParserInterface;
 
-// part 4
 class CORE_XXX_Parser extends ParserCore implements ParserInterface
 {
-    const USER_ID = 2;
-    const FEED_ID = 2;
     // поддерживаемая версия ядра
-    // (НЕ ИЗМЕНЯТЬ САМОСТОЯТЕЛЬНО!)
-    const FOR_CORE_VERSION = '1.8';
+    const FOR_CORE_VERSION = '1.14';
     // дебаг-режим (только для разработки) - выводит информацию о действиях парсера
     // 0 - отключен
     // 1 - включен
@@ -43,8 +39,6 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
             // максимальное количество новостей, берушихся с витрины
             // ИСПОЛЬЗУЕТСЯ ТОЛЬКО В РЕЖИМЕ DEBUG
             // в остальных случаях жестко задается ядром
-            //
-            // не забывайте отключать лимит при сдаче парсера!
             //            'itemsLimit' => 10,
 
             // настройки сайта
@@ -54,7 +48,7 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 'url'         => '',
 
                 // кириллический URL
-                //            'url_cyrillic' => 'https://интернет-портал-народнаяинициатива.рф',
+                //            'url_cyrillic' => 'https://сайт-на-кириллице.рф',
 
                 // использовать юзер-агенты в http запросах.
                 // (опционально)
@@ -185,7 +179,7 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
                 'container'           => '',
 
                 // заголовок (если не получилось взять из витрины)
-                'element-title' => '',
+                'element-title'       => '',
 
                 // ** дальнейшие css-селекторы указываются относительно container
 
@@ -234,29 +228,6 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
         parent::__construct();
     }
 
-    //    protected function getCardTextHtml(string $html)
-    //    : string {
-    //        // добавляем css-селекторы в начало и/или в конец текста
-    //        $html = $this->getHtmlWithInsertedSelectors($html);
-    //
-    //        // вырезаем игнорируемые теги
-    //        $html = $this->getHtmlWithoutIgnoredSelectors($html);
-    //
-    //        // подменяем цитаты
-    //        $html = $this->getHtmlWithSubstitutedQuotes($html);
-    //
-    //        $html = str_replace('<p></p>', '', $html);
-    //        $html = str_replace('<p><br></p>', '', $html);
-    //        $html = str_replace('<p>&nbsp;</p>', '', $html);
-    //        $html = str_replace('<p> </p>', '', $html);
-    //        $html = str_replace('<p> </p>', '', $html);
-    //
-    //        // оставляем только нужные теги
-    //        $html = $this->stripTags($html, $this->allowedTags);
-    //
-    //        return $html;
-    //    }
-
     public static function run()
     : array
     {
@@ -264,47 +235,6 @@ class CORE_XXX_Parser extends ParserCore implements ParserInterface
 
         $items = $Parser->getItems();
         $posts = $Parser->getCards(array_keys($items));
-
-        //        if (!empty($posts))
-        //        {
-        //            foreach ($posts as $post)
-        //            {
-        //                if (!empty($post->items))
-        //                {
-        //                    foreach ($post->items as $postItem)
-        //                    {
-        //                        // вырезаем из текста большие зазоры
-        //                        if ($postItem->type == NewsPostItem::TYPE_TEXT)
-        //                        {
-        //                            $postItem->text = preg_replace("/[\r\n ]{2,}/", "\n\n", $postItem->text);
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        // вырезаем дубли desc vs text
-        //        if (!empty($posts))
-        //        {
-        //            foreach ($posts as $post)
-        //            {
-        //                $postItems = [];
-        //
-        //                if (!empty($post->items))
-        //                {
-        //                    foreach ($post->items as $postItem)
-        //                    {
-        //                        if (!empty($postItem->text) &&
-        //                            strpos(trim($post->description), trim($postItem->text)) === false)
-        //                        {
-        //                            $postItems[] = $postItem;
-        //                        }
-        //                    }
-        //                }
-        //
-        //                $post->items = $postItems;
-        //            }
-        //        }
 
         return $posts;
     }
